@@ -2,22 +2,3 @@ name = "knowledge-tree-web"
 compatibility_date = "2024-04-19"
 compatibility_flags = ["nodejs_compat"]
 pages_build_output_dir = "out"
-
-[env.production]
-name = "knowledge-tree-web"
-
-[env.preview]
-name = "knowledge-tree-web-preview"
-
-# Build configuration
-[build]
-command = "npm run build"
-
-# Directory containing the built application
-[build.upload]
-format = "modules"
-dir = "out"
-
-# Environment variables
-[vars]
-NODE_ENV = "production"
