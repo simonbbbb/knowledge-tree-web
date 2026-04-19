@@ -5,8 +5,11 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "build:cloudflare": "next build && wrangler pages deploy out",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "deploy:preview": "wrangler pages deploy out --env preview",
+    "deploy:production": "wrangler pages deploy out --env production"
   },
   "dependencies": {
     "@next/mdx": "^16.2.4",
