@@ -1,13 +1,13 @@
 "use client";
 
-import { Search, GitBranch, FileText } from "lucide-react";
+import { Link, Search, FileText } from "lucide-react";
 import { STEPS } from "@/lib/constants";
 import { Section, SectionHeading } from "@/components/shared/Section";
 import { ScrollReveal } from "@/components/shared/ScrollReveal";
 
 const iconMap: Record<string, React.ElementType> = {
+  Link,
   Search,
-  GitBranch,
   FileText,
 };
 
@@ -18,7 +18,7 @@ export function HowItWorks() {
         <SectionHeading
           label="How It Works"
           title="Three steps to full visibility"
-          description="From zero to complete infrastructure documentation in minutes."
+          description="From zero to complete infrastructure documentation in under 30 minutes."
         />
 
         <div className="relative mt-16">

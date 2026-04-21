@@ -1,23 +1,24 @@
 import Link from "next/link";
 import { TreePine } from "lucide-react";
-import { GITHUB_REPO, SITE_NAME } from "@/lib/constants";
-import { GitHubIcon } from "@/components/shared/Icons";
+import { SITE_NAME } from "@/lib/constants";
 
 const footerLinks = {
   Product: [
     { label: "Features", href: "/features" },
     { label: "How It Works", href: "/how-it-works" },
     { label: "Pricing", href: "/pricing" },
-    { label: "Documentation", href: "/docs" },
+    { label: "Demo", href: "/demo" },
   ],
   Resources: [
     { label: "Blog", href: "/blog" },
-    { label: "GitHub", href: GITHUB_REPO },
+    { label: "Documentation", href: "/docs" },
+    { label: "Customers", href: "/customers" },
     { label: "API Reference", href: "/docs" },
   ],
   Company: [
     { label: "Privacy", href: "/privacy" },
     { label: "Terms", href: "/terms" },
+    { label: "Security", href: "/security" },
   ],
 };
 
@@ -35,18 +36,8 @@ export function Footer() {
               <span className="text-lg font-bold text-text-primary">{SITE_NAME}</span>
             </Link>
             <p className="text-sm text-text-secondary leading-relaxed mb-4">
-              Open-source infrastructure discovery and auto-documentation.
+              Enterprise infrastructure discovery and auto-documentation platform.
             </p>
-            <div className="flex items-center gap-3">
-              <a
-                href={GITHUB_REPO}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="p-2 rounded-lg text-text-muted hover:text-text-primary hover:bg-white/5 transition-colors"
-              >
-                <GitHubIcon className="w-5 h-5" />
-              </a>
-            </div>
           </div>
 
           {/* Link columns */}
@@ -71,10 +62,10 @@ export function Footer() {
 
         <div className="mt-12 pt-8 border-t border-border-subtle flex flex-col md:flex-row items-center justify-between gap-4">
           <p className="text-sm text-text-muted">
-            &copy; {new Date().getFullYear()} {SITE_NAME}. Apache 2.0 License.
+            &copy; {new Date().getFullYear()} {SITE_NAME}. All rights reserved.
           </p>
           <p className="text-sm text-text-muted">
-            Built with Go, React, PostgreSQL, and Apache AGE.
+            Built for teams that run the world&apos;s infrastructure.
           </p>
         </div>
       </div>

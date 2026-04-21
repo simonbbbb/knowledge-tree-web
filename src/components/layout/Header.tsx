@@ -3,9 +3,8 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Menu, X, TreePine } from "lucide-react";
-import { NAV_LINKS, GITHUB_REPO } from "@/lib/constants";
+import { NAV_LINKS } from "@/lib/constants";
 import { GradientButton } from "@/components/shared/GlassComponents";
-import { GitHubIcon } from "@/components/shared/Icons";
 import { cn } from "@/lib/utils";
 
 export function Header() {
@@ -54,16 +53,15 @@ export function Header() {
 
           {/* Desktop CTAs */}
           <div className="hidden md:flex items-center gap-3">
-            <a
-              href={GITHUB_REPO}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-2 px-3 py-2 text-sm text-text-secondary hover:text-text-primary transition-colors"
+            <Link
+              href="/pricing"
+              className="text-sm text-text-secondary hover:text-text-primary transition-colors px-3 py-2"
             >
-              <GitHubIcon className="w-4 h-4" />
-              GitHub
-            </a>
-            <GradientButton href={GITHUB_REPO}>Get Started</GradientButton>
+              Pricing
+            </Link>
+            <GradientButton href="/demo">
+              Book a Demo
+            </GradientButton>
           </div>
 
           {/* Mobile toggle */}
@@ -91,8 +89,8 @@ export function Header() {
               </Link>
             ))}
             <div className="pt-4 border-t border-border-subtle mt-2">
-              <GradientButton href={GITHUB_REPO} className="w-full">
-                Get Started
+              <GradientButton href="/demo" className="w-full">
+                Book a Demo
               </GradientButton>
             </div>
           </nav>

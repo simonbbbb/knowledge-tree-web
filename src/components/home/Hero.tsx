@@ -2,9 +2,7 @@
 
 import { motion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
-import { GITHUB_REPO } from "@/lib/constants";
 import { GradientButton, GradientText } from "@/components/shared/GlassComponents";
-import { GitHubIcon } from "@/components/shared/Icons";
 
 const graphNodes = [
   { id: "ec2", label: "EC2", x: 180, y: 60 },
@@ -104,7 +102,7 @@ export function Hero() {
               transition={{ duration: 0.6 }}
             >
               <span className="inline-flex items-center gap-2 px-3 py-1 mb-6 text-xs font-medium rounded-full bg-primary-600/10 text-primary-400 border border-primary-600/20">
-                Open Source &middot; Apache 2.0
+                Trusted by 200+ infrastructure teams
               </span>
             </motion.div>
 
@@ -114,9 +112,8 @@ export function Hero() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.1 }}
             >
-              <GradientText>Discover</GradientText> your infrastructure.{" "}
-              <GradientText>Understand</GradientText> it.{" "}
-              <GradientText>Document</GradientText> it.
+              Your infrastructure has a story.{" "}
+              <GradientText>Let us tell it.</GradientText>
             </motion.h1>
 
             <motion.p
@@ -125,9 +122,9 @@ export function Hero() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.2 }}
             >
-              Point Knowledge Tree at your clouds, clusters, and networks. It
-              figures out what you have, how it connects, and writes the
-              documentation for you.
+              Automatically discover, map, and document every resource across
+              your clouds, clusters, and networks. Compliance-ready documentation
+              that never goes stale.
             </motion.p>
 
             <motion.div
@@ -136,11 +133,11 @@ export function Hero() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.3 }}
             >
-              <GradientButton href="/docs">
-                Get Started <ArrowRight className="w-4 h-4" />
+              <GradientButton href="/demo">
+                Book a Demo <ArrowRight className="w-4 h-4" />
               </GradientButton>
-              <GradientButton href={GITHUB_REPO} variant="outline">
-                <GitHubIcon className="w-4 h-4" /> View on GitHub
+              <GradientButton href="/pricing" variant="outline">
+                View Pricing
               </GradientButton>
             </motion.div>
           </div>

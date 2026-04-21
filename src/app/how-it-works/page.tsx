@@ -33,7 +33,7 @@ export default function HowItWorksPage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div className="p-6 rounded-xl border border-border-subtle bg-bg-card/50">
               <div className="text-3xl font-bold text-primary-400 mb-2">5min</div>
-              <div className="text-sm text-text-secondary">Average time to first discovery with Docker Compose</div>
+              <div className="text-sm text-text-secondary">Average time to first discovery</div>
             </div>
             <div className="p-6 rounded-xl border border-border-subtle bg-bg-card/50">
               <div className="text-3xl font-bold text-accent-purple mb-2">0</div>
@@ -41,7 +41,7 @@ export default function HowItWorksPage() {
             </div>
             <div className="p-6 rounded-xl border border-border-subtle bg-bg-card/50">
               <div className="text-3xl font-bold text-accent-orange mb-2">100%</div>
-              <div className="text-sm text-text-secondary">Open source under Apache 2.0 license</div>
+              <div className="text-sm text-text-secondary">Read-only access — zero risk to your infrastructure</div>
             </div>
           </div>
         </div>

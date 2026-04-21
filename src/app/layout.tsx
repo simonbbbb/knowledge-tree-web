@@ -17,7 +17,7 @@ const jetbrains = JetBrains_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: `${SITE_NAME} - Infrastructure Discovery & Auto-Documentation`,
+    default: `${SITE_NAME} — Infrastructure Discovery & Documentation Platform`,
     template: `%s | ${SITE_NAME}`,
   },
   description: SITE_DESCRIPTION,
@@ -27,13 +27,13 @@ export const metadata: Metadata = {
     locale: "en_US",
     url: SITE_URL,
     siteName: SITE_NAME,
-    title: `${SITE_NAME} - Infrastructure Discovery & Auto-Documentation`,
+    title: `${SITE_NAME} — Infrastructure Discovery & Documentation Platform`,
     description: SITE_DESCRIPTION,
     images: [{ url: "/og-image.png", width: 1200, height: 630 }],
   },
   twitter: {
     card: "summary_large_image",
-    title: `${SITE_NAME} - Infrastructure Discovery & Auto-Documentation`,
+    title: `${SITE_NAME} — Infrastructure Discovery & Documentation Platform`,
     description: SITE_DESCRIPTION,
     images: ["/og-image.png"],
   },
@@ -57,7 +57,6 @@ export default function RootLayout({
               name: SITE_NAME,
               url: SITE_URL,
               logo: `${SITE_URL}/images/logo.svg`,
-              sameAs: ["https://github.com/knowledge-tree/knowledge-tree"],
             }),
           }}
         />
@@ -70,11 +69,6 @@ export default function RootLayout({
               name: SITE_NAME,
               applicationCategory: "DeveloperApplication",
               operatingSystem: "Linux, macOS, Windows",
-              offers: {
-                "@type": "Offer",
-                price: "0",
-                priceCurrency: "USD",
-              },
               description: SITE_DESCRIPTION,
             }),
           }}

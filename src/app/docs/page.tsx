@@ -1,50 +1,49 @@
 import type { Metadata } from "next";
 import { ArrowRight, Book, Terminal, Container, Cloud, Bot, Puzzle } from "lucide-react";
-import { GITHUB_REPO } from "@/lib/constants";
 import { GradientButton, GradientText, GlassCard } from "@/components/shared/GlassComponents";
 
 export const metadata: Metadata = {
-  title: "Docs",
+  title: "Documentation",
   description:
-    "Get started with Knowledge Tree. Read the documentation, quickstart guides, and API references.",
+    "Get started with Knowledge Tree. Documentation, quickstart guides, API references, and integration setup.",
 };
 
 const guides = [
   {
     icon: Terminal,
     title: "Quickstart",
-    description: "Get up and running with Docker Compose in 5 minutes.",
-    href: GITHUB_REPO,
+    description: "Deploy Knowledge Tree in under 30 minutes with Docker or Kubernetes.",
+    href: "/demo",
   },
   {
     icon: Cloud,
     title: "Cloud Providers",
-    description: "Configure AWS, Azure, and GCP discovery plugins.",
-    href: GITHUB_REPO,
+    description: "Configure AWS, Azure, and GCP discovery with read-only credentials.",
+    href: "/demo",
   },
   {
     icon: Container,
     title: "Kubernetes",
-    description: "Deep discovery for K8s clusters, pods, and services.",
-    href: GITHUB_REPO,
+    description: "Deep discovery for K8s clusters, pods, services, and ingresses.",
+    href: "/demo",
   },
   {
     icon: Bot,
     title: "MCP Server",
-    description: "Connect AI assistants to your infrastructure data.",
-    href: GITHUB_REPO,
+    description: "Connect AI assistants to query your infrastructure in natural language.",
+    href: "/demo",
   },
   {
     icon: Puzzle,
-    title: "Plugin SDK",
-    description: "Build custom discovery plugins in Go.",
-    href: GITHUB_REPO,
+    title: "Integrations",
+    description: "Connect with Confluence, Jira, Slack, and PagerDuty.",
+    href: "/demo",
   },
   {
     icon: Book,
     title: "API Reference",
-    description: "REST API endpoints, authentication, and webhooks.",
-    href: GITHUB_REPO,
+    description: "REST API endpoints, authentication, webhooks, and SDK documentation.",
+    href: "/demo",
   },
 ];
 
@@ -58,11 +57,11 @@ export default function DocsPage() {
             <GradientText>Documentation</GradientText>
           </h1>
           <p className="text-lg text-text-secondary max-w-2xl mx-auto mb-8">
-            Everything you need to get started with Knowledge Tree.
+            Everything you need to deploy, configure, and get value from Knowledge Tree.
           </p>
           <div className="inline-block">
-            <GradientButton href={GITHUB_REPO}>
-              View on GitHub <ArrowRight className="w-4 h-4" />
+            <GradientButton href="/demo">
+              See the Demo <ArrowRight className="w-4 h-4" />
             </GradientButton>
           </div>
         </div>
@@ -77,8 +76,6 @@ export default function DocsPage() {
                 <a
                   key={guide.title}
                   href={guide.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
                   className="group"
                 >
                   <GlassCard className="h-full p-6 group-hover:border-border-glow transition-colors">

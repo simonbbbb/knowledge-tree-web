@@ -3,7 +3,7 @@ import { SITE_NAME } from "@/lib/constants";
 
 export const metadata: Metadata = {
   title: "Terms of Service",
-  description: `${SITE_NAME} terms of service.`,
+  description: `${SITE_NAME} terms of service and subscription agreement.`,
 };
 
 export default function TermsPage() {
@@ -16,55 +16,62 @@ export default function TermsPage() {
 
           <h2 className="text-xl font-semibold text-text-primary">1. Acceptance</h2>
           <p>
-            By using {SITE_NAME}, you agree to these terms. {SITE_NAME} is open-source
-            software licensed under the Apache License 2.0.
+            By accessing or using {SITE_NAME}, you agree to be bound by these Terms of Service.
+            If you are using {SITE_NAME} on behalf of an organization, you represent that you
+            have authority to bind that organization to these terms.
           </p>
 
-          <h2 className="text-xl font-semibold text-text-primary">2. License</h2>
+          <h2 className="text-xl font-semibold text-text-primary">2. Subscription</h2>
           <p>
-            {SITE_NAME} is provided under the Apache License 2.0. You may use, modify,
-            and distribute the software in accordance with the terms of that license.
-            The full license text is available in the repository.
+            {SITE_NAME} is offered under paid subscription plans (Team, Business, Enterprise).
+            Subscriptions are billed annually. All plans include a 14-day free trial. You may
+            cancel at any time during the trial period without charge.
           </p>
 
-          <h2 className="text-xl font-semibold text-text-primary">3. Disclaimer</h2>
+          <h2 className="text-xl font-semibold text-text-primary">3. Service Level</h2>
           <p>
-            {SITE_NAME} IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-            IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-            FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-            AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-            LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-            OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-            SOFTWARE.
+            Enterprise plan subscribers receive a 99.9% uptime SLA with dedicated support.
+            Business plan subscribers receive priority support with a 4-hour response SLA.
+            All plans include access to our documentation and knowledge base.
           </p>
 
-          <h2 className="text-xl font-semibold text-text-primary">4. Use</h2>
+          <h2 className="text-xl font-semibold text-text-primary">4. Data & Security</h2>
+          <p>
+            You retain full ownership of all infrastructure data discovered by {SITE_NAME}.
+            Cloud provider credentials are encrypted at rest and used solely for read-only
+            discovery. We do not access, share, or sell your infrastructure data.
+          </p>
+
+          <h2 className="text-xl font-semibold text-text-primary">5. Use</h2>
           <p>
             You are responsible for ensuring that your use of {SITE_NAME} complies with
-            your organization&apos;s policies and any applicable regulations. You are
-            responsible for the security of your cloud provider credentials and any
-            infrastructure data discovered by the tool.
+            your organization&apos;s policies and applicable regulations. You are responsible
+            for the security of your cloud provider credentials and API keys.
           </p>
 
-          <h2 className="text-xl font-semibold text-text-primary">5. Contributions</h2>
+          <h2 className="text-xl font-semibold text-text-primary">6. Termination</h2>
           <p>
-            Contributions to {SITE_NAME} are welcome and subject to the contribution
-            guidelines in the repository. By contributing, you agree that your
-            contributions will be licensed under the Apache License 2.0.
+            Either party may terminate with 30 days written notice. Upon termination, your
+            data will be available for export for 30 days, after which it will be permanently
+            deleted from our systems.
           </p>
 
-          <h2 className="text-xl font-semibold text-text-primary">6. Contact</h2>
+          <h2 className="text-xl font-semibold text-text-primary">7. Limitation of Liability</h2>
           <p>
-            For questions about these terms, please open an issue on our{" "}
+            {SITE_NAME} IS PROVIDED &quot;AS IS&quot; WITHOUT WARRANTY OF ANY KIND. IN NO EVENT SHALL
+            THE COMPANY BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, OR CONSEQUENTIAL
+            DAMAGES ARISING OUT OF OR IN CONNECTION WITH THE SERVICE.
+          </p>
+
+          <h2 className="text-xl font-semibold text-text-primary">8. Contact</h2>
+          <p>
+            For questions about these terms, contact us at{" "}
             <a
-              href="https://github.com/knowledge-tree/knowledge-tree"
+              href="mailto:legal@knowledgetree.dev"
               className="text-primary-400 hover:text-primary-300 underline"
-              target="_blank"
-              rel="noopener noreferrer"
             >
-              GitHub repository
-            </a>
-            .
+              legal@knowledgetree.dev
+            </a>.
           </p>
         </div>
       </div>

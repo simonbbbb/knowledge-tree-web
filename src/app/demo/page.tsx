@@ -1,0 +1,983 @@
+"use client";
+
+import { useState, useMemo } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  Search,
+  Server,
+  ArrowRight,
+  Calendar,
+  ChevronDown,
+  ChevronRight,
+  Clock,
+  AlertTriangle,
+  CheckCircle2,
+  XCircle,
+  GitBranch,
+  Shield,
+  Globe,
+  Network,
+  Activity,
+  FileText,
+} from "lucide-react";
+import {
+  GlassCard,
+  GradientText,
+  GradientButton,
+} from "@/components/shared/GlassComponents";
+
+// ---------------------------------------------------------------------------
+// Tab definitions
+// ---------------------------------------------------------------------------
+
+const TABS = [
+  { id: "graph", label: "Knowledge Graph" },
+  { id: "inventory", label: "Service Inventory" },
+  { id: "docs", label: "Documentation" },
+  { id: "timeline", label: "Change Timeline" },
+] as const;
+
+type TabId = (typeof TABS)[number]["id"];
+
+// ---------------------------------------------------------------------------
+// Knowledge Graph data
+// ---------------------------------------------------------------------------
+
+type NodeType = "aws" | "k8s" | "database" | "network";
+
+interface GraphNode {
+  id: string;
+  label: string;
+  type: NodeType;
+  x: number;
+  y: number;
+  properties: Record<string, string>;
+}
+
+const NODE_COLORS: Record<NodeType, { fill: string; stroke: string; ring: string; label: string }> = {
+  aws: { fill: "#F59E0B", stroke: "#D97706", ring: "rgba(245,158,11,0.15)", label: "AWS" },
+  k8s: { fill: "#22C55E", stroke: "#16A34A", ring: "rgba(34,197,94,0.15)", label: "K8s" },
+  database: { fill: "#3B82F6", stroke: "#2563EB", ring: "rgba(59,130,246,0.15)", label: "DB" },
+  network: { fill: "#8B5CF6", stroke: "#7C3AED", ring: "rgba(139,92,246,0.15)", label: "Net" },
+};
+
+const GRAPH_NODES: GraphNode[] = [
+  { id: "n1", label: "API Gateway", type: "aws", x: 480, y: 60, properties: { Provider: "AWS", Service: "API Gateway", Region: "us-east-1", Requests: "1.2M/day", Latency: "12ms p99", "Throttle Rate": "0.02%" } },
+
+  { id: "n2", label: "ALB", type: "aws", x: 340, y: 140, properties: { Provider: "AWS", Service: "ALB", Region: "us-east-1", Targets: "6 instances", Health: "100%", Protocol: "HTTPS" } },
+  { id: "n3", label: "EKS Cluster", type: "k8s", x: 620, y: 140, properties: { Provider: "AWS EKS", Version: "1.29", Nodes: "12", Namespaces: "8", Pods: "94" } },
+  { id: "n4", label: "Order Service", type: "k8s", x: 180, y: 240, properties: { Namespace: "production", Replicas: "3", Image: "order-svc:v2.4.1", CPU: "340m", Memory: "512Mi" } },
+  { id: "n5", label: "Payment Service", type: "k8s", x: 420, y: 240, properties: { Namespace: "production", Replicas: "2", Image: "payment-svc:v1.8.0", CPU: "210m", Memory: "256Mi" } },
+  { id: "n6", label: "User Service", type: "k8s", x: 660, y: 240, properties: { Namespace: "production", Replicas: "3", Image: "user-svc:v3.1.2", CPU: "180m", Memory: "384Mi" } },
+  { id: "n7", label: "Notification Svc", type: "k8s", x: 880, y: 240, properties: { Namespace: "production", Replicas: "2", Image: "notif-svc:v1.2.0", CPU: "90m", Memory: "128Mi" } },
+  { id: "n8", label: "RDS Primary", type: "database", x: 240, y: 360, properties: { Engine: "PostgreSQL 16", Instance: "db.r6g.xlarge", Storage: "500 GB", IOPS: "12,000", Connections: "285" } },
+  { id: "n9", label: "RDS Replica", type: "database", x: 80, y: 440, properties: { Engine: "PostgreSQL 16", Instance: "db.r6g.large", Replication: "Async", Lag: "< 1s", "Read QPS": "4,200" } },
+  { id: "n10", label: "Redis Cluster", type: "database", x: 440, y: 360, properties: { Engine: "Redis 7.2", Nodes: "6 (3 primary + 3 replica)", Memory: "13.5 GB used", "Hit Rate": "99.2%", Evictions: "0" } },
+  { id: "n11", label: "DynamoDB", type: "database", x: 640, y: 360, properties: { Table: "sessions", RCUs: "8,000", WCUs: "3,000", Items: "14.2M", TTL: "24h" } },
+  { id: "n12", label: "S3 Data Lake", type: "aws", x: 860, y: 360, properties: { Bucket: "kt-datalake-prod", Objects: "2.8M", Size: "4.2 TB", Versioning: "Enabled", Encryption: "AES-256" } },
+  { id: "n13", label: "VPC", type: "network", x: 140, y: 60, properties: { CIDR: "10.0.0.0/16", Subnets: "6 (3 public + 3 private)", AZs: "us-east-1a/1b/1c", NAT: "3 gateways" } },
+  { id: "n14", label: "Route 53", type: "network", x: 780, y: 60, properties: { "Hosted Zone": "api.example.com", Records: "12", "Health Checks": "4", "Latency Based": "Yes" } },
+  { id: "n15", label: "CloudFront", type: "network", x: 940, y: 140, properties: { Distributions: "2", "Edge Locations": "Global", "Cache Hit": "94%", Bandwidth: "8.5 TB/mo" } },
+  { id: "n16", label: "SQS Queue", type: "aws", x: 660, y: 460, properties: { Queue: "order-events", Messages: "~12K/hr", DLQ: "order-events-dlq", Retention: "4 days" } },
+  { id: "n17", label: "Lambda", type: "aws", x: 480, y: 480, properties: { Function: "event-processor", Runtime: "Go 1.22", Memory: "512 MB", Duration: "45ms avg", Invocations: "290K/day" } },
+  { id: "n18", label: "Prometheus", type: "k8s", x: 860, y: 440, properties: { Namespace: "monitoring", Targets: "94", Series: "284K", Retention: "30 days", Storage: "200 GB" } },
+  { id: "n19", label: "Vault", type: "k8s", x: 1000, y: 340, properties: { Namespace: "security", Version: "1.15", Secrets: "1,240", Seal: "AWS KMS", HA: "3 pods" } },
+  { id: "n20", label: "Kafka", type: "k8s", x: 180, y: 520, properties: { Cluster: "event-bus", Brokers: "3", Topics: "24", Partitions: "72", Throughput: "15K msg/s" } },
+];
+
+const GRAPH_EDGES: [string, string][] = [
+  ["n1", "n2"],
+  ["n1", "n3"],
+  ["n2", "n4"],
+  ["n2", "n5"],
+  ["n3", "n5"],
+  ["n3", "n6"],
+  ["n3", "n7"],
+  ["n4", "n8"],
+  ["n4", "n10"],
+  ["n5", "n10"],
+  ["n5", "n8"],
+  ["n6", "n11"],
+  ["n6", "n10"],
+  ["n7", "n12"],
+  ["n7", "n16"],
+  ["n8", "n9"],
+  ["n10", "n17"],
+  ["n11", "n17"],
+  ["n16", "n17"],
+  ["n13", "n2"],
+  ["n13", "n3"],
+  ["n14", "n1"],
+  ["n14", "n15"],
+  ["n15", "n12"],
+  ["n17", "n20"],
+  ["n4", "n20"],
+  ["n18", "n3"],
+  ["n19", "n3"],
+  ["n5", "n9"],
+];
+
+// ---------------------------------------------------------------------------
+// Service Inventory data
+// ---------------------------------------------------------------------------
+
+type Status = "healthy" | "degraded" | "alerting";
+
+interface InventoryRow {
+  id: string;
+  name: string;
+  type: string;
+  provider: string;
+  region: string;
+  status: Status;
+  lastSeen: string;
+  connections: string[];
+}
+
+const INVENTORY_DATA: InventoryRow[] = [
+  { id: "inv1", name: "API Gateway (prod)", type: "API Gateway", provider: "AWS", region: "us-east-1", status: "healthy", lastSeen: "2 min ago", connections: ["ALB", "EKS Cluster", "Route 53", "CloudFront"] },
+  { id: "inv2", name: "EKS Production", type: "Kubernetes Cluster", provider: "AWS EKS", region: "us-east-1", status: "healthy", lastSeen: "1 min ago", connections: ["Order Service", "Payment Service", "User Service", "Prometheus", "Vault"] },
+  { id: "inv3", name: "Order Service", type: "Deployment", provider: "Kubernetes", region: "us-east-1a", status: "healthy", lastSeen: "30s ago", connections: ["RDS Primary", "Redis Cluster", "Kafka", "ALB"] },
+  { id: "inv4", name: "Payment Service", type: "Deployment", provider: "Kubernetes", region: "us-east-1a", status: "degraded", lastSeen: "1 min ago", connections: ["RDS Primary", "Redis Cluster", "RDS Replica", "Stripe API"] },
+  { id: "inv5", name: "RDS Primary (orders)", type: "RDS Instance", provider: "AWS RDS", region: "us-east-1a", status: "healthy", lastSeen: "15s ago", connections: ["RDS Replica", "Order Service", "Payment Service"] },
+  { id: "inv6", name: "Redis Cluster", type: "ElastiCache", provider: "AWS", region: "us-east-1", status: "healthy", lastSeen: "45s ago", connections: ["Order Service", "Payment Service", "User Service", "Lambda"] },
+  { id: "inv7", name: "DynamoDB Sessions", type: "DynamoDB Table", provider: "AWS", region: "us-east-1", status: "healthy", lastSeen: "10s ago", connections: ["User Service", "Lambda"] },
+  { id: "inv8", name: "S3 Data Lake", type: "S3 Bucket", provider: "AWS S3", region: "us-east-1", status: "healthy", lastSeen: "3 min ago", connections: ["Notification Svc", "CloudFront", "Athena"] },
+  { id: "inv9", name: "SQS Order Events", type: "SQS Queue", provider: "AWS", region: "us-east-1", status: "healthy", lastSeen: "5s ago", connections: ["Notification Svc", "Lambda", "DLQ"] },
+  { id: "inv10", name: "CloudFront CDN", type: "CDN Distribution", provider: "AWS", region: "Global", status: "healthy", lastSeen: "1 min ago", connections: ["S3 Data Lake", "Route 53", "ALB"] },
+  { id: "inv11", name: "Kafka Event Bus", type: "StatefulSet", provider: "Kubernetes", region: "us-east-1a", status: "alerting", lastSeen: "4 min ago", connections: ["Order Service", "Lambda", "Analytics Pipeline"] },
+  { id: "inv12", name: "Vault Secrets", type: "StatefulSet", provider: "Kubernetes", region: "us-east-1b", status: "healthy", lastSeen: "2 min ago", connections: ["EKS Production", "AWS KMS", "All Services"] },
+];
+
+// ---------------------------------------------------------------------------
+// Documentation data
+// ---------------------------------------------------------------------------
+
+interface DocSection {
+  title: string;
+  content: string;
+}
+
+const DOC_SECTIONS: DocSection[] = [
+  {
+    title: "Overview",
+    content: `The **Order Service** is a core microservice in the e-commerce platform responsible for managing the full lifecycle of customer orders. It handles order creation, validation, payment coordination, inventory reservation, and order status tracking.
+
+**Owner:** Platform Team (platform@example.com)
+**Repository:** github.com/example/orderservice
+**Language:** Go 1.22 | **Framework:** Chi v5
+**Deployment:** Kubernetes Deployment (production namespace)
+**SLA:** 99.95% uptime, < 200ms p99 latency`,
+  },
+  {
+    title: "Dependencies",
+    content: `**Upstream (consumes from):**
+- ALB (HTTPS, port 443) -- receives API traffic
+- Kafka (topic: inventory-events) -- inventory confirmations
+- Vault -- secrets and database credentials
+
+**Downstream (provides to):**
+- Payment Service -- order creation events via Redis pub/sub
+- Notification Service -- order status updates via SQS
+- Analytics Pipeline -- order events via Kafka
+
+**Data stores:**
+- RDS Primary (PostgreSQL 16) -- order records, line items
+- Redis Cluster -- session cache, rate limiting, distributed locks
+- DynamoDB -- idempotency keys`,
+  },
+  {
+    title: "Network Topology",
+    content: `\`\`\`
+Internet --> Route 53 --> CloudFront --> ALB --> [Order Service Pods x3]
+                                              |
+                    +---------+---------------+---------------+
+                    |         |               |               |
+                RDS Primary  Redis       SQS Queue      Kafka
+                    |     (read-only)
+                RDS Replica
+\`\`\`
+
+**Inbound ports:** 8080/TCP (health), 8081/TCP (metrics)
+**Outbound:** PostgreSQL 5432, Redis 6379, SQS HTTPS, Kafka 9092
+**Network Policy:** Allow ingress from ALB only; egress to data stores.`,
+  },
+  {
+    title: "Runbook",
+    content: `**High Error Rate (> 1%)**
+1. Check Pod health: \`kubectl get pods -n production -l app=order-service\`
+2. Review logs: \`kubectl logs -n deployment/order-service --tail=500\`
+3. Check RDS connections: query \`pg_stat_activity\` for connection count
+4. Verify Redis: \`redis-cli info clients\` and check eviction policy
+5. Scale horizontally: \`kubectl scale deployment order-service --replicas=5\`
+
+**Pod CrashLoopBackOff**
+1. Check events: \`kubectl describe pod <pod-name> -n production\`
+2. Review OOMKills -- increase memory limit if needed
+3. Verify Vault sidecar is healthy and secrets are mounted
+
+**Database Connection Exhaustion**
+1. Check connection pool metrics in Prometheus
+2. Reduce \`DB_MAX_CONNECTIONS\` if exceeding RDS limit
+3. Enable PgBouncer if sustained high traffic`,
+  },
+  {
+    title: "Change History",
+    content: `| Date | Change | Author |
+|------|--------|--------|
+| 2026-04-19 | Upgraded to Go 1.22, reduced p99 by 34ms | @sarah |
+| 2026-04-17 | Added idempotency keys via DynamoDB | @mike |
+| 2026-04-14 | Scaled replicas 2 -> 3 for traffic growth | @platform-bot |
+| 2026-04-10 | Migrated Redis client to v9, fixed connection leak | @james |
+| 2026-04-06 | Added SQS DLQ for failed notification events | @sarah |
+| 2026-04-02 | Deployed v2.4.0 -- new order validation rules | @mike |`,
+  },
+];
+
+// ---------------------------------------------------------------------------
+// Change Timeline data
+// ---------------------------------------------------------------------------
+
+type Severity = "info" | "warning" | "critical" | "success";
+
+interface TimelineEntry {
+  id: string;
+  timestamp: string;
+  title: string;
+  description: string;
+  severity: Severity;
+  service: string;
+  author: string;
+}
+
+const TIMELINE_DATA: TimelineEntry[] = [
+  { id: "t1", timestamp: "2026-04-21 09:42 AM", title: "EC2 instance scaled up", description: "Auto-scaling group prod-asg increased desired capacity from 4 to 6 instances due to CPU threshold breach (>80% for 5 min).", severity: "info", service: "EKS Cluster", author: "auto-scaler" },
+  { id: "t2", timestamp: "2026-04-21 08:15 AM", title: "New S3 bucket created", description: "Bucket kt-logs-archive-prod created with versioning enabled and AES-256 encryption. Lifecycle policy set to Glacier after 90 days.", severity: "success", service: "S3", author: "@sarah" },
+  { id: "t3", timestamp: "2026-04-20 11:30 PM", title: "Deployment rolled back", description: "Payment Service v1.9.0 rolled back to v1.8.0 after elevated 5xx rate detected (2.3% vs baseline 0.1%). Root cause: malformed JSON in upstream API response.", severity: "critical", service: "Payment Service", author: "@mike" },
+  { id: "t4", timestamp: "2026-04-20 06:00 PM", title: "Security group rule modified", description: "Inbound rule added to sg-prod-web: TCP/8443 from 10.0.0.0/16. Change approved via PR #4821.", severity: "warning", service: "VPC", author: "@james" },
+  { id: "t5", timestamp: "2026-04-20 02:45 PM", title: "RDS minor version upgrade", description: "PostgreSQL 16.2 patched to 16.4 during maintenance window. Zero-downtime with multi-AZ failover.", severity: "success", service: "RDS Primary", author: "@platform-bot" },
+  { id: "t6", timestamp: "2026-04-19 10:20 AM", title: "Kafka consumer lag spike", description: "Event Bus consumer group order-processor experienced lag spike to 45K messages. Auto-resolved after consumer rebalancing (3m 22s).", severity: "warning", service: "Kafka", author: "monitoring" },
+  { id: "t7", timestamp: "2026-04-19 08:00 AM", title: "New DNS record added", description: "A record api-v2.example.com -> 10.0.3.45 added to hosted zone. Weighted routing: 90% v1, 10% v2.", severity: "info", service: "Route 53", author: "@sarah" },
+  { id: "t8", timestamp: "2026-04-18 04:00 PM", title: "Redis cluster node replaced", description: "Node redis-0003 replaced due to degraded performance. Cluster resharded automatically. No data loss.", severity: "success", service: "Redis Cluster", author: "@platform-bot" },
+];
+
+// ---------------------------------------------------------------------------
+// Status badge helper
+// ---------------------------------------------------------------------------
+
+const STATUS_STYLES: Record<Status, { dot: string; bg: string; text: string; label: string }> = {
+  healthy: { dot: "bg-green-400", bg: "bg-green-400/10", text: "text-green-400", label: "Healthy" },
+  degraded: { dot: "bg-yellow-400", bg: "bg-yellow-400/10", text: "text-yellow-400", label: "Degraded" },
+  alerting: { dot: "bg-red-400", bg: "bg-red-400/10", text: "text-red-400", label: "Alerting" },
+};
+
+const SEVERITY_STYLES: Record<Severity, { border: string; bg: string; icon: string }> = {
+  info: { border: "border-primary-500/30", bg: "bg-primary-500/5", icon: "text-primary-400" },
+  warning: { border: "border-yellow-500/30", bg: "bg-yellow-500/5", icon: "text-yellow-400" },
+  critical: { border: "border-red-500/30", bg: "bg-red-500/5", icon: "text-red-400" },
+  success: { border: "border-green-500/30", bg: "bg-green-500/5", icon: "text-green-400" },
+};
+
+const SEVERITY_ICONS: Record<Severity, React.ElementType> = {
+  info: Activity,
+  warning: AlertTriangle,
+  critical: XCircle,
+  success: CheckCircle2,
+};
+
+// ---------------------------------------------------------------------------
+// Markdown-like renderer (simple)
+// ---------------------------------------------------------------------------
+
+function RenderedContent({ content }: { content: string }) {
+  const lines = content.split("\n");
+  return (
+    <div className="space-y-2 text-sm text-text-secondary leading-relaxed">
+      {lines.map((line, i) => {
+        const trimmed = line.trim();
+        if (!trimmed) return <div key={i} className="h-2" />;
+        if (trimmed.startsWith("|")) {
+          return (
+            <pre key={i} className="text-xs font-mono text-text-muted overflow-x-auto">
+              {trimmed}
+            </pre>
+          );
+        }
+        if (trimmed.startsWith("```")) return null;
+        if (trimmed.startsWith("```")) return null;
+        if (line.startsWith("    ") || (lines[i - 1]?.trim().startsWith("```") && !trimmed.startsWith("```"))) {
+          return (
+            <pre key={i} className="text-xs font-mono text-text-muted bg-bg-dark/50 rounded-lg p-3 overflow-x-auto">
+              {trimmed}
+            </pre>
+          );
+        }
+        // Bold inline
+        const rendered = trimmed.replace(/\*\*(.*?)\*\*/g, '<strong class="text-text-primary font-semibold">$1</strong>');
+        // Code inline
+        const withCode = rendered.replace(/`([^`]+)`/g, '<code class="text-xs font-mono bg-primary-900/30 text-primary-300 px-1.5 py-0.5 rounded">$1</code>');
+        return <p key={i} dangerouslySetInnerHTML={{ __html: withCode }} />;
+      })}
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Main Demo Page
+// ---------------------------------------------------------------------------
+
+export default function DemoPage() {
+  const [activeTab, setActiveTab] = useState<TabId>("graph");
+  const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [expandedRow, setExpandedRow] = useState<string | null>(null);
+  const [selectedDocResource, setSelectedDocResource] = useState("Order Service");
+
+  const selectedNode = useMemo(
+    () => GRAPH_NODES.find((n) => n.id === selectedNodeId) ?? null,
+    [selectedNodeId],
+  );
+
+  const filteredNodes = useMemo(() => {
+    if (!searchQuery) return GRAPH_NODES;
+    const q = searchQuery.toLowerCase();
+    return GRAPH_NODES.filter(
+      (n) =>
+        n.label.toLowerCase().includes(q) ||
+        n.type.toLowerCase().includes(q) ||
+        Object.values(n.properties).some((v) => v.toLowerCase().includes(q)),
+    );
+  }, [searchQuery]);
+
+  const filteredNodeIds = useMemo(() => new Set(filteredNodes.map((n) => n.id)), [filteredNodes]);
+
+  const relevantEdges = useMemo(
+    () =>
+      GRAPH_EDGES.filter(
+        ([a, b]) => filteredNodeIds.has(a) && filteredNodeIds.has(b),
+      ),
+    [filteredNodeIds],
+  );
+
+  return (
+    <>
+      {/* Hero */}
+      <section className="relative pt-28 pb-8 overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-b from-primary-900/20 via-bg-dark to-bg-dark" />
+        <div className="relative mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 text-center">
+          <h1 className="text-4xl md:text-5xl font-bold tracking-tight mb-4">
+            <GradientText>Interactive Demo</GradientText>
+          </h1>
+          <p className="text-lg text-text-secondary max-w-2xl mx-auto">
+            Explore how Knowledge Tree discovers, maps, and documents your
+            infrastructure -- powered by real data patterns from production
+            environments.
+          </p>
+        </div>
+      </section>
+
+      {/* Tab navigation */}
+      <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="flex gap-1 p-1 rounded-xl bg-bg-card/50 border border-border-subtle">
+          {TABS.map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`relative flex-1 px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 cursor-pointer ${
+                activeTab === tab.id
+                  ? "text-white"
+                  : "text-text-muted hover:text-text-secondary"
+              }`}
+            >
+              {activeTab === tab.id && (
+                <motion.div
+                  layoutId="active-tab"
+                  className="absolute inset-0 bg-gradient-to-r from-primary-600/80 to-accent-purple/80 rounded-lg"
+                  transition={{ type: "spring", bounce: 0.15, duration: 0.5 }}
+                />
+              )}
+              <span className="relative z-10">{tab.label}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Tab content */}
+      <section className="relative py-8">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <AnimatePresence mode="wait">
+            {/* ---------------------------------------------------------------- */}
+            {/* Knowledge Graph Tab                                              */}
+            {/* ---------------------------------------------------------------- */}
+            {activeTab === "graph" && (
+              <motion.div
+                key="graph"
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -12 }}
+                transition={{ duration: 0.3 }}
+              >
+                {/* Search */}
+                <div className="relative mb-6 max-w-md">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
+                  <input
+                    type="text"
+                    placeholder="Search nodes by name, type, or property..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full pl-10 pr-4 py-2.5 rounded-lg bg-bg-card border border-border-subtle text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-primary-500/50 transition-colors"
+                  />
+                </div>
+
+                <div className="flex gap-6">
+                  {/* SVG Graph */}
+                  <div className="flex-1 overflow-hidden rounded-xl border border-border-subtle bg-bg-card/30">
+                    <svg
+                      viewBox="0 0 1100 580"
+                      className="w-full h-auto"
+                      style={{ minHeight: 480 }}
+                    >
+                      {/* Background grid */}
+                      <defs>
+                        <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+                          <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(255,255,255,0.03)" strokeWidth="1" />
+                        </pattern>
+                        {Object.entries(NODE_COLORS).map(([type, colors]) => (
+                          <radialGradient key={type} id={`glow-${type}`}>
+                            <stop offset="0%" stopColor={colors.fill} stopOpacity="0.3" />
+                            <stop offset="100%" stopColor={colors.fill} stopOpacity="0" />
+                          </radialGradient>
+                        ))}
+                      </defs>
+                      <rect width="1100" height="580" fill="url(#grid)" />
+
+                      {/* Edges */}
+                      {relevantEdges.map(([fromId, toId], i) => {
+                        const from = GRAPH_NODES.find((n) => n.id === fromId)!;
+                        const to = GRAPH_NODES.find((n) => n.id === toId)!;
+                        const isHighlighted =
+                          selectedNodeId === fromId || selectedNodeId === toId;
+                        return (
+                          <motion.line
+                            key={`edge-${i}`}
+                            x1={from.x}
+                            y1={from.y}
+                            x2={to.x}
+                            y2={to.y}
+                            stroke={
+                              isHighlighted
+                                ? "rgba(99,102,241,0.6)"
+                                : "rgba(255,255,255,0.08)"
+                            }
+                            strokeWidth={isHighlighted ? 2 : 1}
+                            initial={{ pathLength: 0, opacity: 0 }}
+                            animate={{ pathLength: 1, opacity: 1 }}
+                            transition={{ duration: 0.8, delay: i * 0.02 }}
+                          />
+                        );
+                      })}
+
+                      {/* Nodes */}
+                      {filteredNodes.map((node) => {
+                        const colors = NODE_COLORS[node.type];
+                        const isSelected = selectedNodeId === node.id;
+                        return (
+                          <g
+                            key={node.id}
+                            onClick={() =>
+                              setSelectedNodeId(isSelected ? null : node.id)
+                            }
+                            className="cursor-pointer"
+                          >
+                            {/* Glow ring */}
+                            <circle
+                              cx={node.x}
+                              cy={node.y}
+                              r={isSelected ? 32 : 24}
+                              fill={`url(#glow-${node.type})`}
+                              opacity={isSelected ? 1 : 0.5}
+                            />
+                            {/* Main circle */}
+                            <motion.circle
+                              cx={node.x}
+                              cy={node.y}
+                              r={isSelected ? 20 : 16}
+                              fill={colors.fill}
+                              stroke={colors.stroke}
+                              strokeWidth={isSelected ? 3 : 2}
+                              initial={{ scale: 0, opacity: 0 }}
+                              animate={{ scale: 1, opacity: 1 }}
+                              transition={{ duration: 0.4, type: "spring" }}
+                              style={{ transformOrigin: `${node.x}px ${node.y}px` }}
+                            />
+                            {/* Label */}
+                            <text
+                              x={node.x}
+                              y={node.y + 30}
+                              textAnchor="middle"
+                              className="fill-text-secondary text-[11px] font-medium"
+                              style={{ pointerEvents: "none" }}
+                            >
+                              {node.label}
+                            </text>
+                            {/* Type badge */}
+                            <text
+                              x={node.x}
+                              y={node.y + 4}
+                              textAnchor="middle"
+                              className="fill-white text-[9px] font-bold"
+                              style={{ pointerEvents: "none" }}
+                            >
+                              {colors.label}
+                            </text>
+                          </g>
+                        );
+                      })}
+                    </svg>
+
+                    {/* Legend */}
+                    <div className="flex gap-6 px-6 py-3 border-t border-border-subtle">
+                      {Object.entries(NODE_COLORS).map(([type, colors]) => (
+                        <div key={type} className="flex items-center gap-2 text-xs text-text-muted">
+                          <span
+                            className="w-3 h-3 rounded-full"
+                            style={{ backgroundColor: colors.fill }}
+                          />
+                          {type === "aws" ? "AWS" : type === "k8s" ? "Kubernetes" : type === "database" ? "Database" : "Network"}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Detail panel */}
+                  <motion.div
+                    className="w-80 flex-shrink-0"
+                    initial={false}
+                    animate={{ opacity: 1 }}
+                  >
+                    <GlassCard className="h-full">
+                      {selectedNode ? (
+                        <div>
+                          <div className="flex items-center gap-3 mb-4">
+                            <div
+                              className="w-10 h-10 rounded-lg flex items-center justify-center"
+                              style={{ backgroundColor: NODE_COLORS[selectedNode.type].ring }}
+                            >
+                              <span
+                                className="text-sm font-bold"
+                                style={{ color: NODE_COLORS[selectedNode.type].fill }}
+                              >
+                                {NODE_COLORS[selectedNode.type].label}
+                              </span>
+                            </div>
+                            <div>
+                              <h3 className="text-base font-semibold text-text-primary">
+                                {selectedNode.label}
+                              </h3>
+                              <span className="text-xs text-text-muted capitalize">
+                                {selectedNode.type === "k8s"
+                                  ? "Kubernetes"
+                                  : selectedNode.type}
+                              </span>
+                            </div>
+                          </div>
+
+                          <div className="space-y-0">
+                            {Object.entries(selectedNode.properties).map(
+                              ([key, value]) => (
+                                <div
+                                  key={key}
+                                  className="flex justify-between py-2 border-b border-border-subtle last:border-0"
+                                >
+                                  <span className="text-xs text-text-muted">
+                                    {key}
+                                  </span>
+                                  <span className="text-xs text-text-primary font-medium text-right max-w-[50%] truncate">
+                                    {value}
+                                  </span>
+                                </div>
+                              ),
+                            )}
+                          </div>
+
+                          {/* Connected nodes */}
+                          <div className="mt-4 pt-4 border-t border-border-subtle">
+                            <h4 className="text-xs font-medium text-text-muted mb-2 uppercase tracking-wider">
+                              Connections
+                            </h4>
+                            <div className="space-y-1">
+                              {relevantEdges
+                                .filter(
+                                  ([a, b]) =>
+                                    a === selectedNode.id ||
+                                    b === selectedNode.id,
+                                )
+                                .map(([a, b]) => {
+                                  const peerId = a === selectedNode.id ? b : a;
+                                  const peer = GRAPH_NODES.find(
+                                    (n) => n.id === peerId,
+                                  )!;
+                                  return (
+                                    <button
+                                      key={peerId}
+                                      onClick={() => setSelectedNodeId(peerId)}
+                                      className="flex items-center gap-2 w-full px-2 py-1.5 rounded text-xs text-text-secondary hover:bg-bg-card-hover hover:text-text-primary transition-colors cursor-pointer"
+                                    >
+                                      <span
+                                        className="w-2 h-2 rounded-full flex-shrink-0"
+                                        style={{
+                                          backgroundColor:
+                                            NODE_COLORS[peer.type].fill,
+                                        }}
+                                      />
+                                      {peer.label}
+                                    </button>
+                                  );
+                                })}
+                            </div>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="flex flex-col items-center justify-center h-64 text-center">
+                          <Globe className="w-10 h-10 text-text-muted mb-3" />
+                          <p className="text-sm text-text-muted">
+                            Click a node to view its properties and connections
+                          </p>
+                        </div>
+                      )}
+                    </GlassCard>
+                  </motion.div>
+                </div>
+              </motion.div>
+            )}
+
+            {/* ---------------------------------------------------------------- */}
+            {/* Service Inventory Tab                                            */}
+            {/* ---------------------------------------------------------------- */}
+            {activeTab === "inventory" && (
+              <motion.div
+                key="inventory"
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -12 }}
+                transition={{ duration: 0.3 }}
+              >
+                <GlassCard className="overflow-hidden p-0">
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="border-b border-border-subtle bg-bg-card/80">
+                          <th className="text-left px-6 py-4 text-xs font-semibold text-text-muted uppercase tracking-wider">
+                            Name
+                          </th>
+                          <th className="text-left px-6 py-4 text-xs font-semibold text-text-muted uppercase tracking-wider">
+                            Type
+                          </th>
+                          <th className="text-left px-6 py-4 text-xs font-semibold text-text-muted uppercase tracking-wider">
+                            Provider
+                          </th>
+                          <th className="text-left px-6 py-4 text-xs font-semibold text-text-muted uppercase tracking-wider">
+                            Region
+                          </th>
+                          <th className="text-left px-6 py-4 text-xs font-semibold text-text-muted uppercase tracking-wider">
+                            Status
+                          </th>
+                          <th className="text-left px-6 py-4 text-xs font-semibold text-text-muted uppercase tracking-wider">
+                            Last Seen
+                          </th>
+                          <th className="w-10 px-4" />
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {INVENTORY_DATA.map((row) => {
+                          const status = STATUS_STYLES[row.status];
+                          const isExpanded = expandedRow === row.id;
+                          return (
+                            <tbody key={row.id}>
+                              <tr
+                                onClick={() =>
+                                  setExpandedRow(isExpanded ? null : row.id)
+                                }
+                                className="border-b border-border-subtle hover:bg-bg-card-hover/50 cursor-pointer transition-colors"
+                              >
+                                <td className="px-6 py-4 font-medium text-text-primary">
+                                  {row.name}
+                                </td>
+                                <td className="px-6 py-4 text-text-secondary">
+                                  {row.type}
+                                </td>
+                                <td className="px-6 py-4 text-text-secondary">
+                                  {row.provider}
+                                </td>
+                                <td className="px-6 py-4 text-text-secondary">
+                                  {row.region}
+                                </td>
+                                <td className="px-6 py-4">
+                                  <span
+                                    className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${status.bg} ${status.text}`}
+                                  >
+                                    <span
+                                      className={`w-1.5 h-1.5 rounded-full ${status.dot}`}
+                                    />
+                                    {status.label}
+                                  </span>
+                                </td>
+                                <td className="px-6 py-4 text-text-muted">
+                                  {row.lastSeen}
+                                </td>
+                                <td className="px-4">
+                                  <motion.div
+                                    animate={{ rotate: isExpanded ? 180 : 0 }}
+                                    transition={{ duration: 0.2 }}
+                                  >
+                                    <ChevronDown className="w-4 h-4 text-text-muted" />
+                                  </motion.div>
+                                </td>
+                              </tr>
+                              <AnimatePresence>
+                                {isExpanded && (
+                                  <motion.tr
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    exit={{ opacity: 0 }}
+                                    transition={{ duration: 0.2 }}
+                                  >
+                                    <td
+                                      colSpan={7}
+                                      className="px-6 py-4 bg-bg-dark/40"
+                                    >
+                                      <div>
+                                        <span className="text-xs font-semibold text-text-muted uppercase tracking-wider">
+                                          Connected Resources
+                                        </span>
+                                        <div className="flex flex-wrap gap-2 mt-2">
+                                          {row.connections.map((conn) => (
+                                            <span
+                                              key={conn}
+                                              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-bg-card border border-border-subtle text-xs text-text-secondary"
+                                            >
+                                              <ChevronRight className="w-3 h-3 text-primary-400" />
+                                              {conn}
+                                            </span>
+                                          ))}
+                                        </div>
+                                      </div>
+                                    </td>
+                                  </motion.tr>
+                                )}
+                              </AnimatePresence>
+                            </tbody>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                </GlassCard>
+              </motion.div>
+            )}
+
+            {/* ---------------------------------------------------------------- */}
+            {/* Documentation Tab                                                */}
+            {/* ---------------------------------------------------------------- */}
+            {activeTab === "docs" && (
+              <motion.div
+                key="docs"
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -12 }}
+                transition={{ duration: 0.3 }}
+              >
+                {/* Resource selector */}
+                <div className="flex gap-3 mb-6 overflow-x-auto pb-2">
+                  {["Order Service", "Payment Service", "EKS Cluster", "RDS Primary", "API Gateway"].map(
+                    (name) => (
+                      <button
+                        key={name}
+                        onClick={() => setSelectedDocResource(name)}
+                        className={`flex-shrink-0 px-4 py-2 rounded-lg text-sm font-medium transition-all cursor-pointer ${
+                          selectedDocResource === name
+                            ? "bg-primary-600/20 text-primary-300 border border-primary-500/30"
+                            : "bg-bg-card border border-border-subtle text-text-muted hover:text-text-secondary hover:border-border-glow"
+                        }`}
+                      >
+                        {name}
+                      </button>
+                    ),
+                  )}
+                </div>
+
+                <div className="flex gap-6">
+                  {/* Sidebar nav */}
+                  <div className="w-48 flex-shrink-0">
+                    <nav className="space-y-1 sticky top-24">
+                      {DOC_SECTIONS.map((section, i) => {
+                        const icons = [
+                          Globe,
+                          GitBranch,
+                          Network,
+                          Shield,
+                          Clock,
+                        ];
+                        const Icon = icons[i] || FileText;
+                        return (
+                          <a
+                            key={section.title}
+                            href={`#doc-${i}`}
+                            className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-text-muted hover:text-text-secondary hover:bg-bg-card/50 transition-colors"
+                          >
+                            <Icon className="w-4 h-4 flex-shrink-0" />
+                            {section.title}
+                          </a>
+                        );
+                      })}
+                    </nav>
+                  </div>
+
+                  {/* Document content */}
+                  <GlassCard className="flex-1">
+                    <div className="flex items-center gap-3 mb-6 pb-4 border-b border-border-subtle">
+                      <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-primary-600/20 to-accent-purple/20 flex items-center justify-center">
+                        <FileText className="w-5 h-5 text-primary-400" />
+                      </div>
+                      <div>
+                        <h2 className="text-lg font-semibold text-text-primary">
+                          {selectedDocResource}
+                        </h2>
+                        <p className="text-xs text-text-muted">
+                          Auto-generated documentation -- Last updated 2 hours ago
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="space-y-8">
+                      {DOC_SECTIONS.map((section, i) => (
+                        <div key={section.title} id={`doc-${i}`}>
+                          <h3 className="text-base font-semibold text-text-primary mb-3 flex items-center gap-2">
+                            <span className="w-6 h-6 rounded-md bg-primary-600/10 text-primary-400 text-xs flex items-center justify-center font-bold">
+                              {i + 1}
+                            </span>
+                            {section.title}
+                          </h3>
+                          <RenderedContent content={section.content} />
+                        </div>
+                      ))}
+                    </div>
+                  </GlassCard>
+                </div>
+              </motion.div>
+            )}
+
+            {/* ---------------------------------------------------------------- */}
+            {/* Change Timeline Tab                                              */}
+            {/* ---------------------------------------------------------------- */}
+            {activeTab === "timeline" && (
+              <motion.div
+                key="timeline"
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -12 }}
+                transition={{ duration: 0.3 }}
+              >
+                <div className="relative max-w-3xl mx-auto">
+                  {/* Timeline line */}
+                  <div className="absolute left-6 top-0 bottom-0 w-px bg-border-subtle" />
+
+                  <div className="space-y-6">
+                    {TIMELINE_DATA.map((entry, i) => {
+                      const severity = SEVERITY_STYLES[entry.severity];
+                      const SeverityIcon = SEVERITY_ICONS[entry.severity];
+                      return (
+                        <motion.div
+                          key={entry.id}
+                          initial={{ opacity: 0, x: -20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ duration: 0.4, delay: i * 0.08 }}
+                          className="relative pl-16"
+                        >
+                          {/* Timeline dot */}
+                          <div
+                            className={`absolute left-4 top-5 w-5 h-5 rounded-full border-2 border-bg-dark flex items-center justify-center ${severity.bg}`}
+                          >
+                            <SeverityIcon
+                              className={`w-2.5 h-2.5 ${severity.icon}`}
+                            />
+                          </div>
+
+                          {/* Content card */}
+                          <GlassCard
+                            className={`${severity.border} ${severity.bg}`}
+                          >
+                            <div className="flex items-start justify-between gap-4 mb-2">
+                              <h3 className="text-sm font-semibold text-text-primary">
+                                {entry.title}
+                              </h3>
+                              <span className="flex-shrink-0 text-xs text-text-muted whitespace-nowrap">
+                                {entry.timestamp}
+                              </span>
+                            </div>
+                            <p className="text-sm text-text-secondary leading-relaxed mb-3">
+                              {entry.description}
+                            </p>
+                            <div className="flex items-center gap-4 text-xs text-text-muted">
+                              <span className="flex items-center gap-1">
+                                <Server className="w-3 h-3" />
+                                {entry.service}
+                              </span>
+                              <span className="flex items-center gap-1">
+                                <Activity className="w-3 h-3" />
+                                {entry.author}
+                              </span>
+                            </div>
+                          </GlassCard>
+                        </motion.div>
+                      );
+                    })}
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      </section>
+
+      {/* CTA */}
+      <section className="relative py-20 md:py-28 overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary-900/30 via-bg-dark to-accent-purple/10" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[400px] bg-primary-600/15 rounded-full blur-[100px]" />
+        <div
+          className="absolute inset-0 opacity-[0.03]"
+          style={{
+            backgroundImage:
+              "linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)",
+            backgroundSize: "60px 60px",
+          }}
+        />
+        <div className="relative mx-auto max-w-3xl px-4 sm:px-6 lg:px-8 text-center">
+          <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-4">
+            See this with <GradientText>YOUR infrastructure</GradientText>
+          </h2>
+          <p className="text-lg text-text-secondary mb-3">
+            Connect your cloud accounts and Kubernetes clusters. Knowledge Tree
+            will auto-discover every resource, map every dependency, and
+            generate always-current documentation.
+          </p>
+          <p className="text-sm text-text-muted mb-8">
+            14-day free trial. No credit card required. Deploy in under 30
+            minutes.
+          </p>
+          <div className="flex flex-wrap justify-center gap-4">
+            <GradientButton href="/demo">
+              Start Free Trial <ArrowRight className="w-4 h-4" />
+            </GradientButton>
+            <GradientButton
+              href="mailto:sales@knowledgetree.dev"
+              variant="outline"
+            >
+              <Calendar className="w-4 h-4" /> Book a Demo
+            </GradientButton>
+          </div>
+        </div>
+      </section>
+    </>
+  );
+}
