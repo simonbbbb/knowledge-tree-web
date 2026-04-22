@@ -11,9 +11,9 @@ const footerLinks = {
   ],
   Resources: [
     { label: "Blog", href: "/blog" },
-    { label: "Documentation", href: "/docs" },
+    { label: "Documentation", href: "https://docs.knowledgetree.dev" },
+    { label: "API Reference", href: "https://apidocs.knowledgetree.dev" },
     { label: "Design Partners", href: "/customers" },
-    { label: "API Reference", href: "/docs" },
   ],
   Company: [
     { label: "Privacy", href: "/privacy" },
@@ -45,16 +45,29 @@ export function Footer() {
             <div key={title}>
               <h3 className="text-sm font-semibold text-text-primary mb-4">{title}</h3>
               <ul className="space-y-3">
-                {links.map((link) => (
-                  <li key={link.label}>
-                    <Link
-                      href={link.href}
-                      className="text-sm text-text-secondary hover:text-text-primary transition-colors"
-                    >
-                      {link.label}
-                    </Link>
-                  </li>
-                ))}
+                {links.map((link) => {
+                  const isExternal = link.href.startsWith("http");
+                  const className =
+                    "text-sm text-text-secondary hover:text-text-primary transition-colors";
+                  return (
+                    <li key={link.label}>
+                      {isExternal ? (
+                        <a
+                          href={link.href}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className={className}
+                        >
+                          {link.label}
+                        </a>
+                      ) : (
+                        <Link href={link.href} className={className}>
+                          {link.label}
+                        </Link>
+                      )}
+                    </li>
+                  );
+                })}
               </ul>
             </div>
           ))}
