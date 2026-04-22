@@ -8,42 +8,45 @@ export const metadata: Metadata = {
     "Get started with Knowledge Tree. Documentation, quickstart guides, API references, and integration setup.",
 };
 
+const DOCS = "https://docs.knowledgetree.dev";
+const APIDOCS = "https://apidocs.knowledgetree.dev";
+
 const guides = [
   {
     icon: Terminal,
     title: "Quickstart",
     description: "Deploy Knowledge Tree in under 30 minutes with Docker or Kubernetes.",
-    href: "/demo",
+    href: `${DOCS}/getting-started/`,
   },
   {
     icon: Cloud,
     title: "Cloud Providers",
     description: "Configure AWS, Azure, and GCP discovery with read-only credentials.",
-    href: "/demo",
+    href: `${DOCS}/discovery/aws/`,
   },
   {
     icon: Container,
     title: "Kubernetes",
     description: "Deep discovery for K8s clusters, pods, services, and ingresses.",
-    href: "/demo",
+    href: `${DOCS}/discovery/kubernetes/`,
   },
   {
     icon: Bot,
     title: "MCP Server",
     description: "Connect AI assistants to query your infrastructure in natural language.",
-    href: "/demo",
+    href: `${DOCS}/ai/mcp/`,
   },
   {
     icon: Puzzle,
     title: "Integrations",
     description: "Connect with Confluence, Jira, Slack, and PagerDuty.",
-    href: "/demo",
+    href: `${DOCS}/integrations/confluence/`,
   },
   {
     icon: Book,
     title: "API Reference",
     description: "REST API endpoints, authentication, webhooks, and SDK documentation.",
-    href: "/demo",
+    href: APIDOCS,
   },
 ];
 
@@ -57,11 +60,29 @@ export default function DocsPage() {
             <GradientText>Documentation</GradientText>
           </h1>
           <p className="text-lg text-text-secondary max-w-2xl mx-auto mb-8">
-            Everything you need to deploy, configure, and get value from Knowledge Tree.
+            Everything you need to deploy, configure, and get value from
+            Knowledge Tree. Full product docs live at{" "}
+            <a
+              href="https://docs.knowledgetree.dev"
+              className="text-primary-400 hover:text-primary-300"
+            >
+              docs.knowledgetree.dev
+            </a>
+            ; the REST API reference lives at{" "}
+            <a
+              href="https://apidocs.knowledgetree.dev"
+              className="text-primary-400 hover:text-primary-300"
+            >
+              apidocs.knowledgetree.dev
+            </a>
+            .
           </p>
-          <div className="inline-block">
-            <GradientButton href="/demo">
-              See the Demo <ArrowRight className="w-4 h-4" />
+          <div className="flex flex-wrap justify-center gap-3">
+            <GradientButton href="https://docs.knowledgetree.dev">
+              Open documentation <ArrowRight className="w-4 h-4" />
+            </GradientButton>
+            <GradientButton href="https://apidocs.knowledgetree.dev" variant="outline">
+              API reference
             </GradientButton>
           </div>
         </div>
@@ -76,6 +97,8 @@ export default function DocsPage() {
                 <a
                   key={guide.title}
                   href={guide.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="group"
                 >
                   <GlassCard className="h-full p-6 group-hover:border-border-glow transition-colors">
