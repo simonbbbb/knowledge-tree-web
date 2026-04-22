@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { TreePine } from "lucide-react";
 import { SITE_NAME } from "@/lib/constants";
 
@@ -23,6 +26,8 @@ const footerLinks = {
 };
 
 export function Footer() {
+  const pathname = usePathname();
+  if (pathname?.startsWith("/admin")) return null;
   return (
     <footer className="border-t border-border-subtle bg-bg-dark">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12 md:py-16">

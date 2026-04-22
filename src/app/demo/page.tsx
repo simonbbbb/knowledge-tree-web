@@ -1289,11 +1289,11 @@ export default function DemoPage() {
             minutes.
           </p>
           <div className="flex flex-wrap justify-center gap-4">
-            <GradientButton href="/demo">
+            <GradientButton href="/contact?kind=trial">
               Start Free Trial <ArrowRight className="w-4 h-4" />
             </GradientButton>
             <GradientButton
-              href="mailto:sales@knowledgetree.dev"
+              href="/contact?kind=demo"
               variant="outline"
             >
               <Calendar className="w-4 h-4" /> Book a Demo

@@ -2,3 +2,10 @@ name = "knowledge-tree-web"
 compatibility_date = "2024-04-19"
 compatibility_flags = ["nodejs_compat"]
 pages_build_output_dir = "out"
+
+# D1 database for CTA submissions (demo bookings, trial signups, sales inquiries)
+[[d1_databases]]
+binding = "DB"
+database_name = "knowledge-tree-submissions"
+database_id = "04f42813-0fa3-4828-b97c-6d84158df3d5"
+

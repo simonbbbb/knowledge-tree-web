@@ -111,7 +111,7 @@ export const PRICING_TIERS = [
       "10 discovery scopes",
     ],
     cta: "Start Free Trial",
-    ctaHref: "/pricing",
+    ctaHref: "/contact?kind=trial",
     highlighted: false,
   },
   {
@@ -131,7 +131,7 @@ export const PRICING_TIERS = [
       "Audit logs",
     ],
     cta: "Start Free Trial",
-    ctaHref: "/pricing",
+    ctaHref: "/contact?kind=trial",
     highlighted: true,
   },
   {
@@ -152,7 +152,7 @@ export const PRICING_TIERS = [
       "24/7 support with 1h response",
     ],
     cta: "Contact Sales",
-    ctaHref: "mailto:sales@knowledgetree.dev",
+    ctaHref: "/contact?kind=sales",
     highlighted: false,
   },
 ] as const;

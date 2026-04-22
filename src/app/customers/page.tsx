@@ -113,7 +113,7 @@ export default function CustomersPage() {
             team.
           </p>
           <div className="flex flex-wrap justify-center gap-4">
-            <GradientButton href="mailto:hello@knowledgetree.dev?subject=Design%20partner%20application">
+            <GradientButton href="/contact?kind=sales">
               Apply to join
             </GradientButton>
             <GradientButton href="/demo" variant="outline">
@@ -275,7 +275,7 @@ export default function CustomersPage() {
             application personally.
           </p>
           <div className="flex flex-wrap justify-center gap-4">
-            <GradientButton href="mailto:hello@knowledgetree.dev?subject=Design%20partner%20application">
+            <GradientButton href="/contact?kind=sales">
               Apply to join
             </GradientButton>
             <GradientButton href="/demo" variant="outline">

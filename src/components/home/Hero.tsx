@@ -133,11 +133,11 @@ export function Hero() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.3 }}
             >
-              <GradientButton href="/demo">
+              <GradientButton href="/contact?kind=demo">
                 Book a Demo <ArrowRight className="w-4 h-4" />
               </GradientButton>
-              <GradientButton href="/pricing" variant="outline">
-                View Pricing
+              <GradientButton href="/demo" variant="outline">
+                See Live Demo
               </GradientButton>
             </motion.div>
           </div>

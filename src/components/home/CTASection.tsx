@@ -30,10 +30,10 @@ export function CTASection() {
           14-day free trial. No credit card required. Deploy in under 30 minutes.
         </p>
         <div className="flex flex-wrap justify-center gap-4">
-          <GradientButton href="/demo">
+          <GradientButton href="/contact?kind=trial">
             Start Free Trial <ArrowRight className="w-4 h-4" />
           </GradientButton>
-          <GradientButton href="mailto:sales@knowledgetree.dev" variant="outline">
+          <GradientButton href="/contact?kind=demo" variant="outline">
             <Calendar className="w-4 h-4" /> Schedule a Demo
           </GradientButton>
         </div>

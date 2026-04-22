@@ -2,12 +2,14 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { Menu, X, TreePine } from "lucide-react";
 import { NAV_LINKS } from "@/lib/constants";
 import { GradientButton } from "@/components/shared/GlassComponents";
 import { cn } from "@/lib/utils";
 
 export function Header() {
+  const pathname = usePathname();
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -16,6 +18,9 @@ export function Header() {
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
+
+  // Admin panel has its own chrome; hide the marketing header there.
+  if (pathname?.startsWith("/admin")) return null;
 
   return (
     <header
@@ -59,7 +64,7 @@ export function Header() {
             >
               Pricing
             </Link>
-            <GradientButton href="/demo">
+            <GradientButton href="/contact?kind=demo">
               Book a Demo
             </GradientButton>
           </div>
@@ -89,7 +94,7 @@ export function Header() {
               </Link>
             ))}
             <div className="pt-4 border-t border-border-subtle mt-2">
-              <GradientButton href="/demo" className="w-full">
+              <GradientButton href="/contact?kind=demo" className="w-full">
                 Book a Demo
               </GradientButton>
             </div>
