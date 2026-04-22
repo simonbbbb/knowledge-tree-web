@@ -1299,6 +1299,19 @@ export default function DemoPage() {
               <Calendar className="w-4 h-4" /> Book a Demo
             </GradientButton>
           </div>
+          <div className="mt-12 pt-8 border-t border-border-subtle">
+            <p className="text-sm text-text-muted mb-4">
+              Want to explore the full interactive UI first?
+            </p>
+            <GradientButton
+              href="https://demo.knowledgetree.dev/dashboard"
+              variant="outline"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Open Live Demo Dashboard <ArrowRight className="w-4 h-4" />
+            </GradientButton>
+          </div>
         </div>
       </section>
     </>
