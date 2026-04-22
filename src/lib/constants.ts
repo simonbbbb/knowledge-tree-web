@@ -9,7 +9,7 @@ export const NAV_LINKS = [
   { label: "How It Works", href: "/how-it-works" },
   { label: "Pricing", href: "/pricing" },
   { label: "Demo", href: "/demo" },
-  { label: "Customers", href: "/customers" },
+  { label: "Design Partners", href: "/customers" },
   { label: "Blog", href: "/blog" },
 ] as const;
 
@@ -65,10 +65,10 @@ export const FEATURES = [
 ] as const;
 
 export const STATS = [
-  { label: "Resources Mapped", value: "200K+" },
-  { label: "Enterprise Customers", value: "200+" },
-  { label: "Uptime SLA", value: "99.9%" },
-  { label: "Avg. Time to Value", value: "<30 min" },
+  { label: "Cloud Providers Supported", value: "AWS / Azure / GCP" },
+  { label: "Kubernetes Native", value: "Yes" },
+  { label: "Time to First Map", value: "<30 min" },
+  { label: "Stage", value: "Early Access" },
 ] as const;
 
 export const STEPS = [

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { Fragment, useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Search,
@@ -158,20 +158,31 @@ interface DocSection {
   content: string;
 }
 
-const DOC_SECTIONS: DocSection[] = [
-  {
-    title: "Overview",
-    content: `The **Order Service** is a core microservice in the e-commerce platform responsible for managing the full lifecycle of customer orders. It handles order creation, validation, payment coordination, inventory reservation, and order status tracking.
+const DOC_RESOURCES = [
+  "Order Service",
+  "Payment Service",
+  "EKS Cluster",
+  "RDS Primary",
+  "API Gateway",
+] as const;
+
+type DocResource = (typeof DOC_RESOURCES)[number];
+
+const DOCS_BY_RESOURCE: Record<DocResource, DocSection[]> = {
+  "Order Service": [
+    {
+      title: "Overview",
+      content: `The **Order Service** is a core microservice in the e-commerce platform responsible for managing the full lifecycle of customer orders. It handles order creation, validation, payment coordination, inventory reservation, and order status tracking.
 
 **Owner:** Platform Team (platform@example.com)
 **Repository:** github.com/example/orderservice
 **Language:** Go 1.22 | **Framework:** Chi v5
 **Deployment:** Kubernetes Deployment (production namespace)
 **SLA:** 99.95% uptime, < 200ms p99 latency`,
-  },
-  {
-    title: "Dependencies",
-    content: `**Upstream (consumes from):**
+    },
+    {
+      title: "Dependencies",
+      content: `**Upstream (consumes from):**
 - ALB (HTTPS, port 443) -- receives API traffic
 - Kafka (topic: inventory-events) -- inventory confirmations
 - Vault -- secrets and database credentials
@@ -185,10 +196,10 @@ const DOC_SECTIONS: DocSection[] = [
 - RDS Primary (PostgreSQL 16) -- order records, line items
 - Redis Cluster -- session cache, rate limiting, distributed locks
 - DynamoDB -- idempotency keys`,
-  },
-  {
-    title: "Network Topology",
-    content: `\`\`\`
+    },
+    {
+      title: "Network Topology",
+      content: `\`\`\`
 Internet --> Route 53 --> CloudFront --> ALB --> [Order Service Pods x3]
                                               |
                     +---------+---------------+---------------+
@@ -201,10 +212,10 @@ Internet --> Route 53 --> CloudFront --> ALB --> [Order Service Pods x3]
 **Inbound ports:** 8080/TCP (health), 8081/TCP (metrics)
 **Outbound:** PostgreSQL 5432, Redis 6379, SQS HTTPS, Kafka 9092
 **Network Policy:** Allow ingress from ALB only; egress to data stores.`,
-  },
-  {
-    title: "Runbook",
-    content: `**High Error Rate (> 1%)**
+    },
+    {
+      title: "Runbook",
+      content: `**High Error Rate (> 1%)**
 1. Check Pod health: \`kubectl get pods -n production -l app=order-service\`
 2. Review logs: \`kubectl logs -n deployment/order-service --tail=500\`
 3. Check RDS connections: query \`pg_stat_activity\` for connection count
@@ -220,10 +231,10 @@ Internet --> Route 53 --> CloudFront --> ALB --> [Order Service Pods x3]
 1. Check connection pool metrics in Prometheus
 2. Reduce \`DB_MAX_CONNECTIONS\` if exceeding RDS limit
 3. Enable PgBouncer if sustained high traffic`,
-  },
-  {
-    title: "Change History",
-    content: `| Date | Change | Author |
+    },
+    {
+      title: "Change History",
+      content: `| Date | Change | Author |
 |------|--------|--------|
 | 2026-04-19 | Upgraded to Go 1.22, reduced p99 by 34ms | @sarah |
 | 2026-04-17 | Added idempotency keys via DynamoDB | @mike |
@@ -231,8 +242,319 @@ Internet --> Route 53 --> CloudFront --> ALB --> [Order Service Pods x3]
 | 2026-04-10 | Migrated Redis client to v9, fixed connection leak | @james |
 | 2026-04-06 | Added SQS DLQ for failed notification events | @sarah |
 | 2026-04-02 | Deployed v2.4.0 -- new order validation rules | @mike |`,
-  },
-];
+    },
+  ],
+
+  "Payment Service": [
+    {
+      title: "Overview",
+      content: `The **Payment Service** handles all payment processing, including credit card charges, refunds, chargebacks, and payment method tokenization. PCI-DSS Level 1 compliant with tokenization via Stripe and fallback to Adyen.
+
+**Owner:** Billing Team (billing@example.com)
+**Repository:** github.com/example/paymentservice
+**Language:** Kotlin 1.9 | **Framework:** Spring Boot 3.2
+**Deployment:** Kubernetes Deployment (production namespace, isolated PCI zone)
+**SLA:** 99.99% uptime, < 500ms p99 latency
+**Compliance:** PCI-DSS Level 1, SOC 2 Type II`,
+    },
+    {
+      title: "Dependencies",
+      content: `**Upstream (consumes from):**
+- Order Service -- order creation events via Redis pub/sub
+- Vault -- API keys for Stripe, Adyen, and internal signing keys
+
+**Downstream (provides to):**
+- Stripe API (HTTPS) -- primary payment processor
+- Adyen API (HTTPS) -- fallback processor
+- Notification Service -- payment confirmation events
+- Fraud Service -- transaction risk scoring
+
+**Data stores:**
+- RDS Primary (PostgreSQL 16) -- transaction records (encrypted at rest)
+- RDS Replica -- read-only reporting queries
+- Redis Cluster -- idempotency keys, rate limiting`,
+    },
+    {
+      title: "Network Topology",
+      content: `\`\`\`
+Order Service --> [Payment Service Pods x2] --> Stripe API
+                        |                    -> Adyen API (fallback)
+          +-------------+-------------+
+          |             |             |
+     RDS Primary    Redis        Vault (secrets)
+          |
+     RDS Replica (reporting)
+\`\`\`
+
+**Inbound ports:** 8443/TCP (mTLS only from Order Service)
+**Outbound:** PostgreSQL 5432, Redis 6379, Stripe/Adyen HTTPS 443
+**Network Policy:** mTLS required; egress restricted to approved payment processor CIDRs.`,
+    },
+    {
+      title: "Runbook",
+      content: `**Elevated 5xx Rate (> 0.5%)**
+1. Check upstream processor health: \`curl https://status.stripe.com/api/v2/status.json\`
+2. Review recent deploys: \`kubectl rollout history deployment/payment-service -n production\`
+3. Check fallback activation: query Prometheus \`payment_fallback_active\`
+4. If Stripe degraded, confirm Adyen fallback engaged automatically
+5. Escalate to billing on-call if both processors affected
+
+**Transaction Stuck in Pending**
+1. Check \`payment_pending_duration_seconds\` metric for outliers
+2. Query transactions: \`SELECT * FROM payments WHERE status='pending' AND created_at < NOW() - INTERVAL '10 minutes'\`
+3. Reconcile against Stripe dashboard -- manual intervention may be required
+4. Never retry automatically without idempotency key confirmation
+
+**PCI Audit Trigger**
+1. Do NOT access production logs directly -- use SIEM (Splunk)
+2. Notify compliance@ immediately for any data exposure concern`,
+    },
+    {
+      title: "Change History",
+      content: `| Date | Change | Author |
+|------|--------|--------|
+| 2026-04-20 | Rolled back v1.9.0 (malformed JSON from upstream) | @mike |
+| 2026-04-18 | Added Adyen fallback with circuit breaker | @james |
+| 2026-04-12 | Rotated Stripe API keys via Vault | @platform-bot |
+| 2026-04-08 | Upgraded Spring Boot 3.1 -> 3.2 | @sarah |
+| 2026-04-01 | PCI-DSS annual audit passed | @compliance |`,
+    },
+  ],
+
+  "EKS Cluster": [
+    {
+      title: "Overview",
+      content: `The **EKS Production Cluster** is the primary Kubernetes environment hosting all production workloads. Multi-AZ deployment across us-east-1a/1b/1c with managed node groups and Karpenter-based autoscaling.
+
+**Owner:** Platform Team (platform@example.com)
+**Terraform:** github.com/example/infra-tf (modules/eks-prod)
+**Version:** EKS 1.29 | **CNI:** VPC CNI 1.18 + Cilium
+**Nodes:** 12 (8 on-demand m6i.xlarge, 4 spot m6i.2xlarge)
+**SLA:** 99.95% control plane uptime (AWS managed)`,
+    },
+    {
+      title: "Dependencies",
+      content: `**Control plane:**
+- AWS EKS managed control plane (us-east-1)
+- IRSA (IAM Roles for Service Accounts) for pod-level AWS access
+- AWS KMS -- envelope encryption for secrets
+
+**Cluster add-ons:**
+- Karpenter -- node autoscaling
+- External DNS -- Route 53 record management
+- Cert-Manager -- Let's Encrypt TLS certs
+- AWS Load Balancer Controller -- ALB/NLB provisioning
+- Prometheus + Grafana -- observability stack
+- Vault Agent Injector -- secrets injection
+
+**Workloads (namespaces):**
+- production (12 deployments, 8 statefulsets)
+- monitoring (Prometheus, Grafana, Loki)
+- security (Vault, Falco, Trivy Operator)
+- system (CoreDNS, Cilium, Karpenter)`,
+    },
+    {
+      title: "Network Topology",
+      content: `\`\`\`
+VPC 10.0.0.0/16
+   |
+   +-- Public subnets  (3x /24) -- ALBs, NAT Gateways
+   +-- Private subnets (3x /22) -- EKS nodes, pods (Cilium native routing)
+   +-- Database subnets (3x /24) -- RDS, ElastiCache (isolated)
+
+Pod CIDR: 100.64.0.0/16 (Cilium-managed, decoupled from VPC)
+Service CIDR: 172.20.0.0/16
+\`\`\`
+
+**Ingress:** ALB Controller -> Ingress resources -> Services -> Pods
+**Egress:** NAT Gateway per AZ; VPC Endpoints for S3, ECR, DynamoDB, STS
+**NetworkPolicies:** Default deny; explicit allow via Cilium L7 policies`,
+    },
+    {
+      title: "Runbook",
+      content: `**Node NotReady**
+1. \`kubectl get nodes\` -- identify affected node
+2. Check CloudWatch EC2 status for instance
+3. \`kubectl describe node <name>\` -- review conditions (MemoryPressure, DiskPressure)
+4. If stuck: cordon + drain, Karpenter will replace within 2-3 min
+5. For systemic issues, check Karpenter logs: \`kubectl logs -n karpenter -l app=karpenter\`
+
+**Control Plane API Slow**
+1. Check CloudWatch metric \`APIServerRequestLatency\`
+2. Review audit logs for hot clients: \`kubectl top\` flooding is common
+3. Escalate to AWS support if p99 > 1s sustained
+
+**Certificate Expiry**
+1. Cert-manager auto-renews 30 days before expiry
+2. Check cert status: \`kubectl get certificates -A\`
+3. Force renewal: \`kubectl cert-manager renew <cert> -n <ns>\``,
+    },
+    {
+      title: "Change History",
+      content: `| Date | Change | Author |
+|------|--------|--------|
+| 2026-04-21 | Auto-scaled 4 -> 6 instances (CPU > 80%) | auto-scaler |
+| 2026-04-18 | Upgraded Cilium 1.14 -> 1.15 | @james |
+| 2026-04-15 | EKS 1.28 -> 1.29 upgrade completed | @platform-bot |
+| 2026-04-10 | Enabled Karpenter consolidation (20% cost reduction) | @sarah |
+| 2026-04-03 | Migrated to IPv6 dual-stack for pod networking | @james |`,
+    },
+  ],
+
+  "RDS Primary": [
+    {
+      title: "Overview",
+      content: `The **RDS Primary** is the authoritative OLTP database for orders, payments, and user data. Multi-AZ deployment with automated failover, continuous backups to S3, and a cross-region read replica in us-west-2 for DR.
+
+**Owner:** Data Platform Team (data-platform@example.com)
+**Engine:** PostgreSQL 16.4 (engine version auto-minor-upgrade enabled)
+**Instance:** db.r6g.xlarge (4 vCPU, 32 GiB RAM)
+**Storage:** 500 GB gp3, 12,000 IOPS provisioned
+**Backups:** 7-day PITR, daily snapshots to S3 (90-day retention)
+**SLA:** 99.95% (Multi-AZ), RTO 60s, RPO 5s`,
+    },
+    {
+      title: "Dependencies",
+      content: `**Clients (primary writes):**
+- Order Service -- orders, line_items tables
+- Payment Service -- transactions, refunds tables (encrypted)
+- User Service -- accounts, auth_sessions tables
+
+**Replicas:**
+- RDS Replica (us-east-1c) -- async, lag < 1s, 4,200 read QPS
+- Cross-region replica (us-west-2) -- DR only, no production reads
+
+**Integrations:**
+- KMS -- storage encryption (customer-managed key)
+- CloudWatch -- Enhanced Monitoring, Performance Insights
+- Secrets Manager -- credential rotation every 30 days
+- S3 -- automated snapshots and WAL archives`,
+    },
+    {
+      title: "Network Topology",
+      content: `\`\`\`
+                    [Primary db.r6g.xlarge]
+                      | us-east-1a
+                      |
+        +-------------+-------------+
+        |                           |
+  [Read Replica]           [Cross-Region Replica]
+   us-east-1c                  us-west-2 (DR)
+   async < 1s                async 30-60s
+\`\`\`
+
+**Subnet group:** db-subnets-prod (3x private /24, no internet egress)
+**Security groups:** Ingress 5432 from EKS worker nodes only
+**Parameter group:** pg16-prod (max_connections=500, shared_buffers=8GB)
+**TLS:** Required (rds-ca-rsa2048-g1), certificate pinning in clients`,
+    },
+    {
+      title: "Runbook",
+      content: `**Connection Exhaustion**
+1. Check active connections: \`SELECT count(*) FROM pg_stat_activity;\`
+2. Identify top clients: \`SELECT client_addr, count(*) FROM pg_stat_activity GROUP BY 1 ORDER BY 2 DESC;\`
+3. Kill long-running queries: \`SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE state='idle in transaction' AND state_change < NOW() - INTERVAL '5 min';\`
+4. Scale up connection pool (PgBouncer) before scaling instance
+
+**Replication Lag Spike**
+1. Check CloudWatch \`ReplicaLag\` metric
+2. Query on replica: \`SELECT EXTRACT(EPOCH FROM now() - pg_last_xact_replay_timestamp());\`
+3. Look for long-running transactions on primary blocking WAL replay
+4. If lag > 30s, page data-platform on-call
+
+**Failover Drill (quarterly)**
+1. Trigger: \`aws rds reboot-db-instance --db-instance-identifier prod-primary --force-failover\`
+2. Verify clients reconnect within 90s (target RTO)
+3. Validate no write loss via application checksums`,
+    },
+    {
+      title: "Change History",
+      content: `| Date | Change | Author |
+|------|--------|--------|
+| 2026-04-20 | PostgreSQL 16.2 -> 16.4 (zero-downtime failover) | @platform-bot |
+| 2026-04-14 | Increased IOPS 10K -> 12K (peak season prep) | @sarah |
+| 2026-04-09 | Enabled Performance Insights long-term retention | @james |
+| 2026-04-02 | Rotated master credentials via Secrets Manager | @platform-bot |
+| 2026-03-28 | Added cross-region replica in us-west-2 for DR | @sarah |`,
+    },
+  ],
+
+  "API Gateway": [
+    {
+      title: "Overview",
+      content: `The **API Gateway** is the public entry point for all external API traffic. Handles authentication, rate limiting, request validation, and routing to internal services. Fronted by CloudFront for edge caching and DDoS protection.
+
+**Owner:** Platform Team (platform@example.com)
+**Type:** AWS API Gateway (REST, regional) + CloudFront distribution
+**Region:** us-east-1 (primary), with Route 53 latency-based routing
+**Throughput:** 1.2M requests/day avg, 4.5K RPS peak
+**Latency:** 12ms p99 (gateway only, excludes backend)
+**Throttle:** 10K RPS account-level, 500 RPS per-key burst`,
+    },
+    {
+      title: "Dependencies",
+      content: `**Upstream (clients):**
+- CloudFront CDN (94% cache hit rate)
+- Direct clients (mobile apps, partner integrations via API keys)
+
+**Downstream (routes to):**
+- ALB -> Order Service, User Service, Notification Service
+- Lambda (event-processor) -- async webhook ingestion
+- S3 (via VPC endpoint) -- direct presigned URL uploads
+
+**Auth & security:**
+- Cognito User Pools -- JWT validation for consumer APIs
+- Lambda Authorizer -- custom API key validation for partner tier
+- WAF Web ACL -- OWASP Top 10, rate-based rules, geo-blocking`,
+    },
+    {
+      title: "Network Topology",
+      content: `\`\`\`
+Client -> Route 53 (latency) -> CloudFront (edge) -> WAF -> API Gateway
+                                                              |
+                         +------------------------+-----------+
+                         |                        |           |
+                      ALB (REST)            Lambda (async)   S3 (direct)
+                         |
+                  [Internal Services]
+\`\`\`
+
+**Custom domain:** api.example.com (ACM cert, TLS 1.2+)
+**Usage plans:** free (100 RPS), pro (1K RPS), enterprise (10K RPS)
+**Stages:** prod (live), staging (pre-prod tests), canary (5% traffic)`,
+    },
+    {
+      title: "Runbook",
+      content: `**High 4xx Rate**
+1. Check WAF dashboard for blocked requests surge (bot activity common)
+2. Review Cognito auth failures: CloudWatch Logs Insights on \`/aws/apigateway/prod\`
+3. Verify client SDK version -- older versions may use deprecated endpoints
+4. If legitimate clients blocked by WAF, adjust rate-based rule threshold
+
+**Latency Spike (p99 > 50ms)**
+1. Check backend health first (likely ALB or downstream service)
+2. Review CloudFront cache hit rate -- drop below 85% usually indicates cache purge
+3. Check Lambda cold starts for authorizer: \`AWS/Lambda Duration\` metric
+4. Consider enabling API Gateway caching for idempotent GETs
+
+**API Key Compromise**
+1. Revoke key immediately: \`aws apigateway update-api-key --api-key <id> --patch-operations op=replace,path=/enabled,value=false\`
+2. Rotate for affected customer via partner portal
+3. Audit CloudTrail for usage patterns in past 30 days
+4. File security incident per IR-03 runbook`,
+    },
+    {
+      title: "Change History",
+      content: `| Date | Change | Author |
+|------|--------|--------|
+| 2026-04-19 | Added weighted routing api-v2 (90/10 split) | @sarah |
+| 2026-04-16 | Enabled WAF managed rule group (OWASP Top 10 v2) | @james |
+| 2026-04-11 | Lowered free-tier rate limit 200 -> 100 RPS | @platform-bot |
+| 2026-04-05 | Migrated custom authorizer to ARM64 (15% cheaper) | @mike |
+| 2026-03-30 | Added /v2/orders canary stage with 5% traffic | @sarah |`,
+    },
+  ],
+};
 
 // ---------------------------------------------------------------------------
 // Change Timeline data
@@ -331,7 +653,8 @@ export default function DemoPage() {
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [expandedRow, setExpandedRow] = useState<string | null>(null);
-  const [selectedDocResource, setSelectedDocResource] = useState("Order Service");
+  const [selectedDocResource, setSelectedDocResource] = useState<DocResource>("Order Service");
+  const docSections = DOCS_BY_RESOURCE[selectedDocResource];
 
   const selectedNode = useMemo(
     () => GRAPH_NODES.find((n) => n.id === selectedNodeId) ?? null,
@@ -378,12 +701,12 @@ export default function DemoPage() {
 
       {/* Tab navigation */}
       <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="flex gap-1 p-1 rounded-xl bg-bg-card/50 border border-border-subtle">
+        <div className="flex gap-1 p-1 rounded-xl bg-bg-card/50 border border-border-subtle overflow-x-auto">
           {TABS.map((tab) => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`relative flex-1 px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 cursor-pointer ${
+              className={`relative flex-1 min-w-fit whitespace-nowrap px-3 sm:px-4 py-2.5 rounded-lg text-xs sm:text-sm font-medium transition-all duration-200 cursor-pointer ${
                 activeTab === tab.id
                   ? "text-white"
                   : "text-text-muted hover:text-text-secondary"
@@ -429,13 +752,13 @@ export default function DemoPage() {
                   />
                 </div>
 
-                <div className="flex gap-6">
+                <div className="flex flex-col lg:flex-row gap-6">
                   {/* SVG Graph */}
-                  <div className="flex-1 overflow-hidden rounded-xl border border-border-subtle bg-bg-card/30">
+                  <div className="flex-1 min-w-0 overflow-hidden rounded-xl border border-border-subtle bg-bg-card/30">
                     <svg
                       viewBox="0 0 1100 580"
                       className="w-full h-auto"
-                      style={{ minHeight: 480 }}
+                      preserveAspectRatio="xMidYMid meet"
                     >
                       {/* Background grid */}
                       <defs>
@@ -536,7 +859,7 @@ export default function DemoPage() {
                     </svg>
 
                     {/* Legend */}
-                    <div className="flex gap-6 px-6 py-3 border-t border-border-subtle">
+                    <div className="flex flex-wrap gap-3 sm:gap-6 px-4 sm:px-6 py-3 border-t border-border-subtle">
                       {Object.entries(NODE_COLORS).map(([type, colors]) => (
                         <div key={type} className="flex items-center gap-2 text-xs text-text-muted">
                           <span
@@ -551,7 +874,7 @@ export default function DemoPage() {
 
                   {/* Detail panel */}
                   <motion.div
-                    className="w-80 flex-shrink-0"
+                    className="w-full lg:w-80 lg:flex-shrink-0"
                     initial={false}
                     animate={{ opacity: 1 }}
                   >
@@ -693,26 +1016,26 @@ export default function DemoPage() {
                           const status = STATUS_STYLES[row.status];
                           const isExpanded = expandedRow === row.id;
                           return (
-                            <tbody key={row.id}>
+                            <Fragment key={row.id}>
                               <tr
                                 onClick={() =>
                                   setExpandedRow(isExpanded ? null : row.id)
                                 }
                                 className="border-b border-border-subtle hover:bg-bg-card-hover/50 cursor-pointer transition-colors"
                               >
-                                <td className="px-6 py-4 font-medium text-text-primary">
+                                <td className="px-4 sm:px-6 py-4 font-medium text-text-primary whitespace-nowrap">
                                   {row.name}
                                 </td>
-                                <td className="px-6 py-4 text-text-secondary">
+                                <td className="px-4 sm:px-6 py-4 text-text-secondary whitespace-nowrap">
                                   {row.type}
                                 </td>
-                                <td className="px-6 py-4 text-text-secondary">
+                                <td className="px-4 sm:px-6 py-4 text-text-secondary whitespace-nowrap">
                                   {row.provider}
                                 </td>
-                                <td className="px-6 py-4 text-text-secondary">
+                                <td className="px-4 sm:px-6 py-4 text-text-secondary whitespace-nowrap">
                                   {row.region}
                                 </td>
-                                <td className="px-6 py-4">
+                                <td className="px-4 sm:px-6 py-4">
                                   <span
                                     className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${status.bg} ${status.text}`}
                                   >
@@ -722,7 +1045,7 @@ export default function DemoPage() {
                                     {status.label}
                                   </span>
                                 </td>
-                                <td className="px-6 py-4 text-text-muted">
+                                <td className="px-4 sm:px-6 py-4 text-text-muted whitespace-nowrap">
                                   {row.lastSeen}
                                 </td>
                                 <td className="px-4">
@@ -744,7 +1067,7 @@ export default function DemoPage() {
                                   >
                                     <td
                                       colSpan={7}
-                                      className="px-6 py-4 bg-bg-dark/40"
+                                      className="px-4 sm:px-6 py-4 bg-bg-dark/40"
                                     >
                                       <div>
                                         <span className="text-xs font-semibold text-text-muted uppercase tracking-wider">
@@ -766,7 +1089,7 @@ export default function DemoPage() {
                                   </motion.tr>
                                 )}
                               </AnimatePresence>
-                            </tbody>
+                            </Fragment>
                           );
                         })}
                       </tbody>
@@ -789,7 +1112,7 @@ export default function DemoPage() {
               >
                 {/* Resource selector */}
                 <div className="flex gap-3 mb-6 overflow-x-auto pb-2">
-                  {["Order Service", "Payment Service", "EKS Cluster", "RDS Primary", "API Gateway"].map(
+                  {DOC_RESOURCES.map(
                     (name) => (
                       <button
                         key={name}
@@ -806,11 +1129,11 @@ export default function DemoPage() {
                   )}
                 </div>
 
-                <div className="flex gap-6">
+                <div className="flex flex-col lg:flex-row gap-6">
                   {/* Sidebar nav */}
-                  <div className="w-48 flex-shrink-0">
-                    <nav className="space-y-1 sticky top-24">
-                      {DOC_SECTIONS.map((section, i) => {
+                  <div className="w-full lg:w-48 lg:flex-shrink-0">
+                    <nav className="flex lg:flex-col lg:space-y-1 gap-1 overflow-x-auto lg:sticky lg:top-24 pb-2 lg:pb-0">
+                      {docSections.map((section, i) => {
                         const icons = [
                           Globe,
                           GitBranch,
@@ -823,7 +1146,7 @@ export default function DemoPage() {
                           <a
                             key={section.title}
                             href={`#doc-${i}`}
-                            className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-text-muted hover:text-text-secondary hover:bg-bg-card/50 transition-colors"
+                            className="flex-shrink-0 flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-text-muted hover:text-text-secondary hover:bg-bg-card/50 transition-colors whitespace-nowrap"
                           >
                             <Icon className="w-4 h-4 flex-shrink-0" />
                             {section.title}
@@ -834,7 +1157,7 @@ export default function DemoPage() {
                   </div>
 
                   {/* Document content */}
-                  <GlassCard className="flex-1">
+                  <GlassCard className="flex-1 min-w-0">
                     <div className="flex items-center gap-3 mb-6 pb-4 border-b border-border-subtle">
                       <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-primary-600/20 to-accent-purple/20 flex items-center justify-center">
                         <FileText className="w-5 h-5 text-primary-400" />
@@ -850,7 +1173,7 @@ export default function DemoPage() {
                     </div>
 
                     <div className="space-y-8">
-                      {DOC_SECTIONS.map((section, i) => (
+                      {docSections.map((section, i) => (
                         <div key={section.title} id={`doc-${i}`}>
                           <h3 className="text-base font-semibold text-text-primary mb-3 flex items-center gap-2">
                             <span className="w-6 h-6 rounded-md bg-primary-600/10 text-primary-400 text-xs flex items-center justify-center font-bold">
@@ -892,7 +1215,7 @@ export default function DemoPage() {
                           initial={{ opacity: 0, x: -20 }}
                           animate={{ opacity: 1, x: 0 }}
                           transition={{ duration: 0.4, delay: i * 0.08 }}
-                          className="relative pl-16"
+                          className="relative pl-12 sm:pl-16"
                         >
                           {/* Timeline dot */}
                           <div
@@ -907,7 +1230,7 @@ export default function DemoPage() {
                           <GlassCard
                             className={`${severity.border} ${severity.bg}`}
                           >
-                            <div className="flex items-start justify-between gap-4 mb-2">
+                            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-1 sm:gap-4 mb-2">
                               <h3 className="text-sm font-semibold text-text-primary">
                                 {entry.title}
                               </h3>

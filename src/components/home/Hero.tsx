@@ -102,7 +102,7 @@ export function Hero() {
               transition={{ duration: 0.6 }}
             >
               <span className="inline-flex items-center gap-2 px-3 py-1 mb-6 text-xs font-medium rounded-full bg-primary-600/10 text-primary-400 border border-primary-600/20">
-                Trusted by 200+ infrastructure teams
+                Early access · Design partner program open
               </span>
             </motion.div>
 

@@ -2,77 +2,93 @@ import type { Metadata } from "next";
 import { GradientText, GradientButton, GlassCard } from "@/components/shared/GlassComponents";
 import { Section } from "@/components/shared/Section";
 import { ScrollReveal } from "@/components/shared/ScrollReveal";
-import { Quote, TrendingDown, Clock, ShieldCheck } from "lucide-react";
+import {
+  MessageCircle,
+  Route,
+  Tag,
+  Headphones,
+  Users,
+  Cloud,
+  Container,
+  FileCheck,
+} from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Customers",
-  description: "See how enterprise teams use Knowledge Tree to discover, map, and document their infrastructure.",
+  title: "Design Partners",
+  description:
+    "Knowledge Tree is in early access. Partner with us to shape the future of infrastructure discovery and auto-documentation.",
 };
 
-const caseStudies = [
+const benefits = [
   {
-    company: "Meridian Financial",
-    industry: "Financial Technology",
-    size: "2,000 employees",
-    icon: ShieldCheck,
-    challenge: "Regulatory compliance (SOC 2, PCI-DSS) with 15,000+ cloud resources across AWS and Azure. Audit preparation consumed 3 months per year.",
-    solution: "Automated discovery with compliance-ready documentation that updates in real-time as infrastructure changes.",
-    results: [
-      { metric: "85%", label: "Reduction in audit prep time" },
-      { metric: "3,200", label: "Orphaned resources discovered" },
-      { metric: "$240K", label: "Annual savings from cleanup" },
-    ],
-    quote: "We went from dreading audits to completing them in days instead of months.",
-    person: "Sarah Chen",
-    title: "VP of Platform Engineering",
+    icon: MessageCircle,
+    title: "Direct line to the founders",
+    description:
+      "Weekly check-ins, a shared Slack channel, and zero support tiers between you and the people building the product.",
   },
   {
-    company: "NovaTech",
-    industry: "SaaS Platform",
-    size: "800 employees",
-    icon: Clock,
-    challenge: "Kubernetes sprawl across 12 clusters with no way to map service dependencies. Incidents took hours to diagnose.",
-    solution: "Knowledge graph automatically mapped all service-to-service dependencies, enabling instant blast radius analysis.",
-    results: [
-      { metric: "60%", label: "Faster incident response" },
-      { metric: "3 weeks", label: "New engineer onboarding (was 3 months)" },
-      { metric: "12", label: "Clusters fully mapped in 1 hour" },
-    ],
-    quote: "During our last incident, we identified the blast radius in 30 seconds instead of 2 hours.",
-    person: "Marcus Williams",
-    title: "Director of SRE",
+    icon: Route,
+    title: "Shape the roadmap",
+    description:
+      "Your use cases drive what we build next. We prioritize design-partner requests above everything else for the first year.",
   },
   {
-    company: "Atlas Logistics",
-    industry: "Supply Chain & Logistics",
-    size: "5,000 employees",
-    icon: TrendingDown,
-    challenge: "Multi-cloud infrastructure (AWS + GCP + Azure) inherited through three acquisitions. No unified view of what they owned.",
-    solution: "Single platform discovering across all three clouds with automatic relationship mapping and cost optimization insights.",
-    results: [
-      { metric: "47→12", label: "AWS accounts consolidated" },
-      { metric: "$1.2M", label: "Annual savings from decommissioning" },
-      { metric: "100%", label: "Infrastructure visibility achieved" },
-    ],
-    quote: "We finally have a complete picture of what we own and how it connects.",
-    person: "Dr. Priya Patel",
-    title: "Chief Technology Officer",
+    icon: Tag,
+    title: "Founding-customer pricing",
+    description:
+      "Locked-in rates for the lifetime of your contract, well below our eventual list pricing. No seat minimums while we iterate.",
   },
   {
-    company: "Cipher Security",
-    industry: "Cybersecurity",
-    size: "400 employees",
-    icon: ShieldCheck,
-    challenge: "Security audits required complete infrastructure documentation they couldn't maintain manually between audit cycles.",
-    solution: "Auto-generated documentation with change tracking ensures audit-ready docs are always current.",
-    results: [
-      { metric: "0", label: "Documentation findings in last audit" },
-      { metric: "Record", label: "Fastest SOC 2 Type II renewal" },
-      { metric: "90%", label: "Less time on doc maintenance" },
-    ],
-    quote: "Our auditors were impressed. They'd never seen infrastructure docs this current.",
-    person: "James Rodriguez",
-    title: "Chief Information Security Officer",
+    icon: Headphones,
+    title: "White-glove onboarding",
+    description:
+      "We install, configure, and tune Knowledge Tree to your environment ourselves. Hands-on help until it is genuinely useful to your team.",
+  },
+];
+
+const idealPartner = [
+  {
+    icon: Users,
+    title: "Platform, SRE, or infra team of 5+",
+    description:
+      "You feel the pain of undocumented infrastructure every week and have authority to pilot new tools.",
+  },
+  {
+    icon: Cloud,
+    title: "Non-trivial cloud footprint",
+    description:
+      "At least one major cloud (AWS / Azure / GCP) with hundreds of resources, or a production Kubernetes environment.",
+  },
+  {
+    icon: Container,
+    title: "Willing to actually use it",
+    description:
+      "Able to dedicate a few hours per week for the first month to onboard, give feedback, and let us watch you work.",
+  },
+  {
+    icon: FileCheck,
+    title: "Open to a reference story later",
+    description:
+      "If it works, we would love to write about it together once you are comfortable. Not a requirement to join.",
+  },
+];
+
+const whatWereBuilding = [
+  {
+    label: "Multi-cloud discovery",
+    description: "AWS, Azure, GCP, Kubernetes in one graph — live today.",
+  },
+  {
+    label: "Knowledge graph",
+    description: "Apache AGE backed, queryable with Cypher and MCP.",
+  },
+  {
+    label: "Auto-documentation",
+    description: "LLM-generated service docs, runbooks, and topology maps.",
+  },
+  {
+    label: "Change timeline",
+    description: "Real-time drift detection with audit-ready history.",
   },
 ];
 
@@ -83,114 +99,187 @@ export default function CustomersPage() {
       <section className="relative pt-32 pb-16 overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-b from-primary-900/20 via-bg-dark to-bg-dark" />
         <div className="relative mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 text-center">
+          <span className="inline-flex items-center gap-2 px-3 py-1 mb-6 text-xs font-medium rounded-full bg-primary-600/10 text-primary-400 border border-primary-600/20">
+            Early access · Design partner program
+          </span>
           <h1 className="text-4xl md:text-5xl font-bold tracking-tight mb-6">
-            Trusted by teams that{" "}
-            <GradientText>can&apos;t afford to guess</GradientText>
+            Build Knowledge Tree with us as a{" "}
+            <GradientText>design partner</GradientText>
           </h1>
-          <p className="text-lg text-text-secondary max-w-2xl mx-auto">
-            From fintech to logistics, engineering teams rely on Knowledge Tree
-            to know their infrastructure inside and out.
+          <p className="text-lg text-text-secondary max-w-2xl mx-auto mb-8">
+            We are pre-launch. Instead of pretending otherwise, we are inviting
+            a small number of infrastructure teams to shape the product in
+            exchange for founding-customer pricing and direct access to the
+            team.
           </p>
-        </div>
-      </section>
-
-      {/* Aggregate metrics */}
-      <section className="py-12 border-y border-border-subtle bg-bg-dark-blue/30">
-        <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-            {[
-              { metric: "200+", label: "Enterprise customers" },
-              { metric: "200K+", label: "Resources mapped daily" },
-              { metric: "$4.2M", label: "Saved in unused resources" },
-              { metric: "85%", label: "Faster audit preparation" },
-            ].map((stat) => (
-              <div key={stat.label} className="text-center">
-                <div className="text-3xl font-bold text-primary-400">{stat.metric}</div>
-                <div className="text-sm text-text-secondary mt-1">{stat.label}</div>
-              </div>
-            ))}
+          <div className="flex flex-wrap justify-center gap-4">
+            <GradientButton href="mailto:hello@knowledgetree.dev?subject=Design%20partner%20application">
+              Apply to join
+            </GradientButton>
+            <GradientButton href="/demo" variant="outline">
+              See the product
+            </GradientButton>
           </div>
         </div>
       </section>
 
-      {/* Case studies */}
-      {caseStudies.map((cs, i) => {
-        const Icon = cs.icon;
-        const isEven = i % 2 === 0;
-        return (
-          <Section key={cs.company} className="!py-16">
-            <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-              <ScrollReveal>
-                <div className={`flex flex-col ${isEven ? "lg:flex-row" : "lg:flex-row-reverse"} gap-12 items-start`}>
-                  {/* Text content */}
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-4">
-                      <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-primary-600/20 to-accent-purple/20 flex items-center justify-center">
+      {/* Honesty section */}
+      <Section className="!py-12">
+        <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
+          <ScrollReveal>
+            <GlassCard className="p-8">
+              <h2 className="text-xl font-semibold text-text-primary mb-3">
+                Where we are, honestly
+              </h2>
+              <p className="text-text-secondary leading-relaxed mb-3">
+                Knowledge Tree is a working product, not a marketing site with
+                nothing behind it. Discovery, the knowledge graph, and
+                auto-documentation all run in production-grade environments
+                today.
+              </p>
+              <p className="text-text-secondary leading-relaxed">
+                What we do not have yet are hundreds of paying enterprise
+                customers. We would rather build the first ten with people who
+                care than invent them. If that sounds like you, read on.
+              </p>
+            </GlassCard>
+          </ScrollReveal>
+        </div>
+      </Section>
+
+      {/* What design partners get */}
+      <Section className="!py-16">
+        <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+          <ScrollReveal>
+            <div className="text-center mb-12">
+              <h2 className="text-3xl font-bold text-text-primary mb-3">
+                What you get
+              </h2>
+              <p className="text-text-secondary max-w-2xl mx-auto">
+                Design partners trade a little patience for a lot of influence
+                and a price that will never come back.
+              </p>
+            </div>
+          </ScrollReveal>
+          <div className="grid md:grid-cols-2 gap-6">
+            {benefits.map((b, i) => {
+              const Icon = b.icon;
+              return (
+                <ScrollReveal key={b.title} delay={i * 0.05}>
+                  <GlassCard className="p-6 h-full">
+                    <div className="flex items-start gap-4">
+                      <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-primary-600/20 to-accent-purple/20 flex items-center justify-center flex-shrink-0">
                         <Icon className="w-5 h-5 text-primary-400" />
                       </div>
                       <div>
-                        <h3 className="text-xl font-bold text-text-primary">{cs.company}</h3>
-                        <p className="text-sm text-text-muted">{cs.industry} · {cs.size}</p>
+                        <h3 className="text-lg font-semibold text-text-primary mb-1">
+                          {b.title}
+                        </h3>
+                        <p className="text-text-secondary text-sm leading-relaxed">
+                          {b.description}
+                        </p>
                       </div>
                     </div>
+                  </GlassCard>
+                </ScrollReveal>
+              );
+            })}
+          </div>
+        </div>
+      </Section>
 
-                    <div className="space-y-4 mb-8">
+      {/* Ideal partner */}
+      <Section className="!py-16 border-t border-border-subtle">
+        <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+          <ScrollReveal>
+            <div className="text-center mb-12">
+              <h2 className="text-3xl font-bold text-text-primary mb-3">
+                Who we are looking for
+              </h2>
+              <p className="text-text-secondary max-w-2xl mx-auto">
+                We can only properly support a handful of partners at once, so
+                we are picky on purpose.
+              </p>
+            </div>
+          </ScrollReveal>
+          <div className="grid md:grid-cols-2 gap-6">
+            {idealPartner.map((p, i) => {
+              const Icon = p.icon;
+              return (
+                <ScrollReveal key={p.title} delay={i * 0.05}>
+                  <GlassCard className="p-6 h-full">
+                    <div className="flex items-start gap-4">
+                      <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-primary-600/20 to-accent-purple/20 flex items-center justify-center flex-shrink-0">
+                        <Icon className="w-5 h-5 text-primary-400" />
+                      </div>
                       <div>
-                        <h4 className="text-sm font-semibold text-accent-orange uppercase tracking-wider mb-1">Challenge</h4>
-                        <p className="text-text-secondary">{cs.challenge}</p>
-                      </div>
-                      <div>
-                        <h4 className="text-sm font-semibold text-primary-400 uppercase tracking-wider mb-1">Solution</h4>
-                        <p className="text-text-secondary">{cs.solution}</p>
+                        <h3 className="text-lg font-semibold text-text-primary mb-1">
+                          {p.title}
+                        </h3>
+                        <p className="text-text-secondary text-sm leading-relaxed">
+                          {p.description}
+                        </p>
                       </div>
                     </div>
+                  </GlassCard>
+                </ScrollReveal>
+              );
+            })}
+          </div>
+        </div>
+      </Section>
 
-                    {/* Quote */}
-                    <div className="relative pl-6 border-l-2 border-primary-600/30">
-                      <Quote className="absolute -left-3 -top-1 w-6 h-6 text-primary-600/50" />
-                      <p className="text-text-primary italic mb-2">&ldquo;{cs.quote}&rdquo;</p>
-                      <p className="text-sm text-text-muted">
-                        <span className="text-text-secondary font-medium">{cs.person}</span>, {cs.title}
-                      </p>
+      {/* What's live */}
+      <Section className="!py-16 border-t border-border-subtle">
+        <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
+          <ScrollReveal>
+            <div className="text-center mb-10">
+              <h2 className="text-3xl font-bold text-text-primary mb-3">
+                What is running today
+              </h2>
+              <p className="text-text-secondary max-w-2xl mx-auto">
+                Not a slideware pitch. These are the capabilities you can see
+                on the demo page right now.
+              </p>
+            </div>
+          </ScrollReveal>
+          <div className="grid sm:grid-cols-2 gap-4">
+            {whatWereBuilding.map((item, i) => (
+              <ScrollReveal key={item.label} delay={i * 0.05}>
+                <div className="flex items-start gap-3 p-5 rounded-xl border border-border-subtle bg-bg-card/40">
+                  <div className="w-2 h-2 mt-2 rounded-full bg-primary-400 flex-shrink-0" />
+                  <div>
+                    <div className="text-text-primary font-semibold mb-1">
+                      {item.label}
                     </div>
-                  </div>
-
-                  {/* Results */}
-                  <div className="lg:w-80 flex-shrink-0">
-                    <GlassCard className="p-6">
-                      <h4 className="text-sm font-semibold text-text-muted uppercase tracking-wider mb-6">Results</h4>
-                      <div className="space-y-6">
-                        {cs.results.map((r) => (
-                          <div key={r.label}>
-                            <div className="text-3xl font-bold text-primary-400">{r.metric}</div>
-                            <div className="text-sm text-text-secondary">{r.label}</div>
-                          </div>
-                        ))}
-                      </div>
-                    </GlassCard>
+                    <div className="text-sm text-text-secondary">
+                      {item.description}
+                    </div>
                   </div>
                 </div>
               </ScrollReveal>
-            </div>
-          </Section>
-        );
-      })}
+            ))}
+          </div>
+        </div>
+      </Section>
 
       {/* CTA */}
       <section className="py-20 border-t border-border-subtle">
         <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-3xl font-bold text-text-primary mb-4">
-            Join 200+ infrastructure teams
+            Think you fit? Let us talk.
           </h2>
           <p className="text-text-secondary mb-8">
-            Start your 14-day free trial. No credit card required.
+            Send us a note with a short description of your infrastructure and
+            what you would want Knowledge Tree to solve. We respond to every
+            application personally.
           </p>
           <div className="flex flex-wrap justify-center gap-4">
-            <GradientButton href="/pricing">
-              Start Free Trial
+            <GradientButton href="mailto:hello@knowledgetree.dev?subject=Design%20partner%20application">
+              Apply to join
             </GradientButton>
-            <GradientButton href="mailto:sales@knowledgetree.dev" variant="outline">
-              Contact Sales
+            <GradientButton href="/demo" variant="outline">
+              Explore the demo
             </GradientButton>
           </div>
         </div>

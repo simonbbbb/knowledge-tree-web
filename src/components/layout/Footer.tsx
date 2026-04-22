@@ -12,7 +12,7 @@ const footerLinks = {
   Resources: [
     { label: "Blog", href: "/blog" },
     { label: "Documentation", href: "/docs" },
-    { label: "Customers", href: "/customers" },
+    { label: "Design Partners", href: "/customers" },
     { label: "API Reference", href: "/docs" },
   ],
   Company: [
