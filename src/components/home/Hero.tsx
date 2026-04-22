@@ -139,6 +139,9 @@ export function Hero() {
               <GradientButton href="/demo" variant="outline">
                 See Live Demo
               </GradientButton>
+              <GradientButton href="https://b8bcb629.knowledge-tree-web-app.pages.dev/dashboard" variant="outline">
+                Open Dashboard
+              </GradientButton>
             </motion.div>
           </div>
 

@@ -64,6 +64,14 @@ export function Header() {
             >
               Pricing
             </Link>
+            <Link
+              href="https://b8bcb629.knowledge-tree-web-app.pages.dev/dashboard"
+              className="text-sm text-text-secondary hover:text-text-primary transition-colors px-3 py-2"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              See the Dashboard
+            </Link>
             <GradientButton href="/contact?kind=demo">
               Book a Demo
             </GradientButton>
@@ -93,7 +101,16 @@ export function Header() {
                 {link.label}
               </Link>
             ))}
-            <div className="pt-4 border-t border-border-subtle mt-2">
+            <div className="pt-4 border-t border-border-subtle mt-2 flex flex-col gap-2">
+              <Link
+                href="https://b8bcb629.knowledge-tree-web-app.pages.dev/dashboard"
+                className="text-sm text-text-secondary hover:text-text-primary transition-colors px-4 py-3"
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => setMobileOpen(false)}
+              >
+                See the Dashboard
+              </Link>
               <GradientButton href="/contact?kind=demo" className="w-full">
                 Book a Demo
               </GradientButton>
