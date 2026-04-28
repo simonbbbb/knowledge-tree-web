@@ -1303,14 +1303,14 @@ export default function DemoPage() {
             <p className="text-sm text-text-muted mb-4">
               Want to explore the full interactive UI first?
             </p>
-            <GradientButton
+            <a
               href="https://demo.knowledgetree.dev/dashboard"
-              variant="outline"
               target="_blank"
               rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-xl border border-white/10 text-sm font-medium text-text-primary hover:bg-white/5 transition-all"
             >
               Open Live Demo Dashboard <ArrowRight className="w-4 h-4" />
-            </GradientButton>
+            </a>
           </div>
         </div>
       </section>
