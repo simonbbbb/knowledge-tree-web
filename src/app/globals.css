@@ -20,7 +20,7 @@
   --color-bg-card: #1E1B2E;
   --color-bg-card-hover: #2A2642;
   --color-border-subtle: rgba(255, 255, 255, 0.06);
-  --color-border-glow: rgba(79, 70, 229, 0.3);
+  --color-border-glow: rgba(79, 70, 229, 0.25);
   --color-text-primary: #FAFAFA;
   --color-text-secondary: #94A3B8;
   --color-text-muted: #64748B;
@@ -28,66 +28,41 @@
   --font-mono: var(--font-jetbrains);
 }
 
-body {
-  background: var(--color-background);
-  color: var(--color-foreground);
-}
+body { background: #0A0A0F; color: #FAFAFA; }
 
-/* Animated gradient background for hero sections */
-@keyframes gradient-shift {
-  0%, 100% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-}
+/* ── Enterprise Classic (default, compiled by Tailwind) ── */
 
-/* Marquee animation for logo cloud */
-@keyframes marquee {
-  0% { transform: translateX(0); }
-  100% { transform: translateX(-50%); }
-}
-
-/* Glow pulse for graph nodes */
-@keyframes glow-pulse {
-  0%, 100% { opacity: 0.6; }
-  50% { opacity: 1; }
-}
-
-/* Scrollbar styling */
-::-webkit-scrollbar {
-  width: 8px;
-}
-::-webkit-scrollbar-track {
-  background: #0A0A0F;
-}
-::-webkit-scrollbar-thumb {
-  background: #2A2642;
-  border-radius: 4px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: #4F46E5;
-}
-
-/* Selection color */
-::selection {
-  background: rgba(99, 102, 241, 0.3);
-  color: #FAFAFA;
-}
-
-/* ── The Nexus Theme ── */
+/* ── The Nexus — override every Tailwind color that touches brand ── */
 :root[data-theme="nexus"] {
-  --color-background: #050510;
-  --color-primary-400: #22D3EE;
-  --color-primary-500: #06B6D4;
-  --color-primary-600: #0891B2;
-  --color-primary-700: #0E7490;
+  /* CSS variable overrides for direct var() references */
   --color-accent-purple: #818CF8;
-  --color-bg-card: #0A0A1E;
-  --color-bg-card-hover: #10102E;
-  --color-border-subtle: rgba(6, 182, 212, 0.12);
-  --color-border-glow: rgba(6, 182, 212, 0.35);
-  --color-text-secondary: #8899B0;
-  --color-text-muted: #5A6B85;
 }
+:root[data-theme="nexus"] .text-primary-400 { color: #22D3EE !important; }
+:root[data-theme="nexus"] .text-primary-300 { color: #67E8F9 !important; }
+:root[data-theme="nexus"] .bg-primary-600\/10 { background: rgba(6, 182, 212, 0.1) !important; }
+:root[data-theme="nexus"] .bg-primary-600\/15 { background: rgba(6, 182, 212, 0.15) !important; }
+:root[data-theme="nexus"] .bg-primary-600\/20 { background: rgba(6, 182, 212, 0.2) !important; }
+:root[data-theme="nexus"] .bg-primary-500\/5 { background: rgba(6, 182, 212, 0.05) !important; }
+:root[data-theme="nexus"] .bg-primary-500\/10 { background: rgba(6, 182, 212, 0.1) !important; }
+:root[data-theme="nexus"] .bg-primary-900\/30 { background: rgba(6, 182, 212, 0.3) !important; }
+:root[data-theme="nexus"] .border-primary-500 { border-color: rgba(6, 182, 212, 0.5) !important; }
+:root[data-theme="nexus"] .border-primary-600 { border-color: rgba(6, 182, 212, 0.6) !important; }
+:root[data-theme="nexus"] .hover\:border-primary-500:hover { border-color: rgba(6, 182, 212, 0.5) !important; }
+:root[data-theme="nexus"] .hover\:bg-primary-600:hover { background: #0891B2 !important; }
+:root[data-theme="nexus"] .shadow-primary-600 { box-shadow: 0 4px 12px rgba(6, 182, 212, 0.25) !important; }
+:root[data-theme="nexus"] .to-accent-purple { --tw-gradient-to: #818CF8 !important; }
+:root[data-theme="nexus"] .from-primary-600 { --tw-gradient-from: #0891B2 !important; }
+:root[data-theme="nexus"] .from-primary-400 { --tw-gradient-from: #22D3EE !important; }
+:root[data-theme="nexus"] .from-primary-900 { --tw-gradient-from: rgba(6, 182, 212, 0.15) !important; }
+:root[data-theme="nexus"] body { background: #050510; }
+:root[data-theme="nexus"] .bg-bg-dark\/80 { background: rgba(5, 5, 16, 0.8) !important; }
 
-:root[data-theme="nexus"] .bg-gradient-to-r.from-primary-600.to-accent-purple {
-  background: linear-gradient(135deg, #06B6D4, #818CF8) !important;
-}
+@keyframes gradient-shift { 0%,100%{background-position:0% 50%} 50%{background-position:100% 50%} }
+@keyframes marquee { 0%{transform:translateX(0)} 100%{transform:translateX(-50%)} }
+@keyframes glow-pulse { 0%,100%{opacity:.6} 50%{opacity:1} }
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: #0A0A0F; }
+::-webkit-scrollbar-thumb { background: #2A2642; border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: #4F46E5; }
+::selection { background: rgba(99,102,241,.3); color: #FAFAFA; }
+:root[data-theme="nexus"] ::-webkit-scrollbar-thumb:hover { background: #0891B2; }
