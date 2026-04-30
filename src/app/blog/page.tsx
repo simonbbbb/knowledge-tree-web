@@ -1,17 +1,31 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { getBlogPosts } from "@/lib/blog";
+import { SITE_URL } from "@/lib/constants";
 import { GradientText } from "@/components/shared/GlassComponents";
 import { GlassCard } from "@/components/shared/GlassComponents";
 
 export const metadata: Metadata = {
   title: "Blog",
   description:
-    "Updates, technical deep-dives, and guides from the Knowledge Tree team.",
+    "Updates, technical deep-dives, and guides from the Knowledge Tree team on infrastructure discovery, knowledge graphs, and auto-documentation.",
+  openGraph: {
+    title: "Blog | Knowledge Tree",
+    description:
+      "Updates, technical deep-dives, and guides from the Knowledge Tree team.",
+    url: `${SITE_URL}/blog`,
+    type: "website",
+  },
+  alternates: {
+    canonical: `${SITE_URL}/blog`,
+  },
 };
 
 export default function BlogPage() {
   const posts = getBlogPosts();
+
+  // Group posts by category
+  const categories = [...new Set(posts.map((p) => p.category))];
 
   return (
     <>
@@ -34,12 +48,40 @@ export default function BlogPage() {
               No posts yet. Check back soon!
             </p>
           )}
-          <div className="space-y-8">
+
+          {/* Category filters */}
+          <div className="flex flex-wrap gap-2 mb-8">
+            <button className="text-xs px-3 py-1.5 rounded-full bg-primary-600/20 text-primary-400 border border-primary-600/30 font-medium">
+              All Posts
+            </button>
+            {categories.map((cat) => (
+              <span
+                key={cat}
+                className="text-xs px-3 py-1.5 rounded-full bg-bg-card text-text-muted border border-border-subtle"
+              >
+                {cat}
+              </span>
+            ))}
+          </div>
+
+          <div className="space-y-6">
             {posts.map((post) => (
               <Link key={post.slug} href={`/blog/${post.slug}`}>
                 <GlassCard className="p-6 hover:border-border-glow transition-colors">
-                  <div className="flex items-center gap-3 mb-3">
-                    <time className="text-xs text-text-muted">{post.date}</time>
+                  <div className="flex items-center gap-3 mb-2 text-xs text-text-muted">
+                    <time>{post.date}</time>
+                    <span>&middot;</span>
+                    <span>{post.readTime}</span>
+                    <span>&middot;</span>
+                    <span>{post.category}</span>
+                  </div>
+                  <h2 className="text-xl font-semibold text-text-primary mb-2">
+                    {post.title}
+                  </h2>
+                  <p className="text-sm text-text-secondary mb-3">
+                    {post.description}
+                  </p>
+                  <div className="flex gap-2">
                     {post.tags.map((tag) => (
                       <span
                         key={tag}
@@ -49,10 +91,6 @@ export default function BlogPage() {
                       </span>
                     ))}
                   </div>
-                  <h2 className="text-xl font-semibold text-text-primary mb-2">
-                    {post.title}
-                  </h2>
-                  <p className="text-sm text-text-secondary">{post.description}</p>
                 </GlassCard>
               </Link>
             ))}

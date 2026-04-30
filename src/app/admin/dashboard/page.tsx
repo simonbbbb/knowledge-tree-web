@@ -3,6 +3,7 @@ import { AdminDashboard } from "./AdminDashboard";
 
 export const metadata: Metadata = {
   title: "Admin · Dashboard",
+  description: "Knowledge Tree administrative dashboard for managing discovery scopes, credentials, and system settings.",
   robots: { index: false, follow: false },
 };
 

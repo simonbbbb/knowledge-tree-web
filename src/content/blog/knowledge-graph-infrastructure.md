@@ -3,6 +3,9 @@ title: "Why We Built a Knowledge Graph for Infrastructure"
 description: "How Apache AGE and PostgreSQL give Knowledge Tree a relational understanding of your infrastructure that flat inventories can't match."
 date: 2026-04-18
 author: "Knowledge Tree Team"
+category: "Engineering"
+readTime: "5 min read"
+excerpt: "How Apache AGE and PostgreSQL give Knowledge Tree a relational understanding of your infrastructure that flat inventories can't match."
 tags: ["architecture", "knowledge-graph", "technical"]
 ---
 

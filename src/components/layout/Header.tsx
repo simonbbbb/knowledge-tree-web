@@ -3,19 +3,14 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Menu, X, TreePine, Orbit, Building2 } from "lucide-react";
+import { Menu, X, TreePine } from "lucide-react";
 import { NAV_LINKS } from "@/lib/constants";
 import { GradientButton } from "@/components/shared/GlassComponents";
 import { cn } from "@/lib/utils";
-import { useTheme, type Theme } from "@/lib/ThemeContext";
-
 export function Header() {
   const pathname = usePathname();
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
-  const { theme, setTheme } = useTheme();
-
-  const toggleTheme = () => setTheme(theme === "enterprise" ? "nexus" : "enterprise");
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 10);
@@ -62,18 +57,6 @@ export function Header() {
 
           {/* Desktop CTAs */}
           <div className="hidden md:flex items-center gap-3">
-            {/* Theme toggle */}
-            <button
-              onClick={toggleTheme}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-text-muted hover:text-text-primary hover:bg-white/5 transition-all border border-transparent hover:border-border-subtle"
-              title={`Switch to ${theme === "enterprise" ? "The Nexus" : "Enterprise Classic"} theme`}
-            >
-              {theme === "enterprise" ? (
-                <><Orbit className="w-3.5 h-3.5" /> Nexus</>
-              ) : (
-                <><Building2 className="w-3.5 h-3.5" /> Classic</>
-              )}
-            </button>
             <Link
               href="/pricing"
               className="text-sm text-text-secondary hover:text-text-primary transition-colors px-3 py-2"
@@ -118,13 +101,6 @@ export function Header() {
               </Link>
             ))}
             <div className="pt-4 border-t border-border-subtle mt-2 flex flex-col gap-2">
-              <button
-                onClick={() => { toggleTheme(); setMobileOpen(false); }}
-                className="flex items-center gap-2 px-4 py-3 text-text-secondary hover:text-text-primary hover:bg-white/5 rounded-lg transition-colors text-sm"
-              >
-                {theme === "enterprise" ? <Orbit className="w-4 h-4" /> : <Building2 className="w-4 h-4" />}
-                Switch to {theme === "enterprise" ? "The Nexus" : "Classic"}
-              </button>
               <Link
                 href="https://demo.knowledgetree.dev/dashboard"
                 className="text-sm text-text-secondary hover:text-text-primary transition-colors px-4 py-3"

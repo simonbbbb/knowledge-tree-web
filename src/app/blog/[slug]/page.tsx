@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Calendar, User, Clock, Tag } from "lucide-react";
 import { getBlogPost, getBlogPosts } from "@/lib/blog";
+import { SITE_URL, SITE_NAME } from "@/lib/constants";
+import { BlogMarkdown } from "./BlogMarkdown";
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -19,6 +21,24 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title: post.title,
     description: post.description,
+    openGraph: {
+      title: post.title,
+      description: post.description,
+      type: "article",
+      publishedTime: post.date,
+      authors: [post.author],
+      tags: post.tags,
+      url: `${SITE_URL}/blog/${post.slug}`,
+      images: [{ url: "/og-image.png", width: 1200, height: 630 }],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: post.title,
+      description: post.description,
+    },
+    alternates: {
+      canonical: `${SITE_URL}/blog/${post.slug}`,
+    },
   };
 }
 
@@ -27,9 +47,53 @@ export default async function BlogPostPage({ params }: Props) {
   const post = getBlogPost(slug);
   if (!post) notFound();
 
+  const articleSchema = {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    headline: post.title,
+    description: post.description,
+    datePublished: post.date,
+    author: {
+      "@type": "Person",
+      name: post.author,
+    },
+    publisher: {
+      "@type": "Organization",
+      name: SITE_NAME,
+      logo: {
+        "@type": "ImageObject",
+        url: `${SITE_URL}/images/logo.svg`,
+      },
+    },
+    mainEntityOfPage: {
+      "@type": "WebPage",
+      "@id": `${SITE_URL}/blog/${post.slug}`,
+    },
+    keywords: post.tags.join(", "),
+  };
+
+  const breadcrumbSchema = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Home", item: SITE_URL },
+      { "@type": "ListItem", position: 2, name: "Blog", item: `${SITE_URL}/blog` },
+      { "@type": "ListItem", position: 3, name: post.title, item: `${SITE_URL}/blog/${post.slug}` },
+    ],
+  };
+
   return (
     <section className="pt-32 pb-24">
       <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(articleSchema) }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+        />
+
         <Link
           href="/blog"
           className="inline-flex items-center gap-1 text-sm text-text-secondary hover:text-primary-400 transition-colors mb-8"
@@ -38,14 +102,28 @@ export default async function BlogPostPage({ params }: Props) {
         </Link>
 
         <div className="mb-8">
-          <div className="flex items-center gap-3 mb-4">
-            <time className="text-sm text-text-muted">{post.date}</time>
-            <span className="text-sm text-text-muted">by {post.author}</span>
+          <div className="flex flex-wrap items-center gap-4 mb-4 text-sm text-text-muted">
+            <span className="inline-flex items-center gap-1">
+              <Calendar className="w-3.5 h-3.5" />
+              {post.date}
+            </span>
+            <span className="inline-flex items-center gap-1">
+              <User className="w-3.5 h-3.5" />
+              {post.author}
+            </span>
+            <span className="inline-flex items-center gap-1">
+              <Clock className="w-3.5 h-3.5" />
+              {post.readTime}
+            </span>
+            <span className="inline-flex items-center gap-1">
+              <Tag className="w-3.5 h-3.5" />
+              {post.category}
+            </span>
           </div>
           <h1 className="text-3xl md:text-4xl font-bold tracking-tight mb-4">
             {post.title}
           </h1>
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
             {post.tags.map((tag) => (
               <span
                 key={tag}
@@ -58,59 +136,7 @@ export default async function BlogPostPage({ params }: Props) {
         </div>
 
         <article className="prose prose-invert max-w-none">
-          {post.content.split("\n\n").map((paragraph, i) => {
-            if (paragraph.startsWith("## ")) {
-              return (
-                <h2
-                  key={i}
-                  className="text-xl font-semibold text-text-primary mt-8 mb-4"
-                >
-                  {paragraph.replace("## ", "")}
-                </h2>
-              );
-            }
-            if (paragraph.startsWith("```")) {
-              const lines = paragraph.split("\n");
-              const code = lines.slice(1, -1).join("\n");
-              return (
-                <pre
-                  key={i}
-                  className="bg-bg-card border border-border-subtle rounded-lg p-4 my-6 overflow-x-auto text-sm"
-                >
-                  <code className="text-text-secondary font-mono">{code}</code>
-                </pre>
-              );
-            }
-            if (paragraph.startsWith("1. ") || paragraph.startsWith("- ")) {
-              return (
-                <div
-                  key={i}
-                  className="text-text-secondary leading-relaxed my-4 space-y-2"
-                  dangerouslySetInnerHTML={{
-                    __html: paragraph
-                      .replace(/\*\*(.*?)\*\*/g, '<strong class="text-text-primary">$1</strong>')
-                      .replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2" class="text-primary-400 hover:text-primary-300 underline">$1</a>')
-                      .replace(/`([^`]+)`/g, '<code class="text-primary-300 bg-bg-card px-1.5 py-0.5 rounded text-sm">$1</code>')
-                      .split("\n")
-                      .map((line: string) => `<p>${line}</p>`)
-                      .join(""),
-                  }}
-                />
-              );
-            }
-            return (
-              <p
-                key={i}
-                className="text-text-secondary leading-relaxed my-4"
-                dangerouslySetInnerHTML={{
-                  __html: paragraph
-                    .replace(/\*\*(.*?)\*\*/g, '<strong class="text-text-primary">$1</strong>')
-                    .replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2" class="text-primary-400 hover:text-primary-300 underline" target="_blank" rel="noopener noreferrer">$1</a>')
-                    .replace(/`([^`]+)`/g, '<code class="text-primary-300 bg-bg-card px-1.5 py-0.5 rounded text-sm">$1</code>'),
-                }}
-              />
-            );
-          })}
+          <BlogMarkdown content={post.content} />
         </article>
       </div>
     </section>

@@ -10,6 +10,9 @@ export interface BlogPost {
   description: string;
   date: string;
   author: string;
+  category: string;
+  readTime: string;
+  excerpt: string;
   tags: string[];
   content: string;
 }
@@ -27,6 +30,9 @@ export function getBlogPosts(): BlogPost[] {
         description: data.description ?? "",
         date: data.date ? new Date(data.date).toISOString().slice(0, 10) : "",
         author: data.author ?? "Knowledge Tree Team",
+        category: data.category ?? "General",
+        readTime: data.readTime ?? "5 min read",
+        excerpt: data.excerpt ?? "",
         tags: data.tags ?? [],
         content,
       };
